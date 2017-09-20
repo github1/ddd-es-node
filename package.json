@@ -1,6 +1,6 @@
 {
   "name": "ddd-es-node",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "ddd-es-node",
   "engineStrict": true,
   "engines": {
