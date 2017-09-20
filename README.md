@@ -14,7 +14,7 @@ npm install ddd-es-node --save
 import { Entity } from 'ddd-es-node/dist/src/core/entity';
 import { OrderCancelledEvent } from './events';
 
-class Order extends ddd.Entity {
+class Order extends Entity {
   constructor(id) {
     super(id, Entity.CONFIG((self, event) => {
       if(event instanceof OrderCancelledEvent) {
