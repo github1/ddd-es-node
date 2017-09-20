@@ -1,7 +1,6 @@
 import * as walk from 'walk';
 import * as fs from 'fs';
 import * as path from 'path';
-import parent from 'parent-package-json';
 
 const types = {};
 const loaded = {};
@@ -9,7 +8,20 @@ const loaded = {};
 let packageJson = null;
 const loadParentPackageJson = () => {
   return packageJson === null ? new Promise((resolve) => {
-    const parentPath = parent(__dirname).path;
+    const initPath = (() => {
+      if (global && global.resourceBaseDir) {
+        return global.resourceBaseDir;
+      }
+      let initPath = path.resolve(path.join(__dirname, '/../../'));
+      if (path.basename(initPath) === 'dist') {
+        initPath = path.resolve(path.join(initPath, '/..'));
+      }
+      if (initPath.indexOf('/node_modules/') > -1) {
+        initPath = path.resolve(path.join(initPath, '/../../'));
+      }
+      return initPath;
+    })();
+    const parentPath = path.join(initPath, 'package.json');
     fs.readFile(parentPath, (err, data) => {
       packageJson = JSON.parse(data);
       packageJson._path = parentPath;
@@ -25,8 +37,8 @@ export const typeLoader = (typeName, callback) => {
     loadParentPackageJson().then((packageJson) => {
       const baseDir = path.dirname(packageJson._path);
       const baseDirs = [`${baseDir}/lib`, `${baseDir}/src`, `${baseDir}/spec`];
-      if(packageJson.dddEs && packageJson.dddEs.modules) {
-        packageJson.dddEs.modules.forEach((module) => {
+      if (packageJson.includeModules) {
+        packageJson.includeModules.forEach((module) => {
           baseDirs.push(`${baseDir}/node_modules/${module}/src`);
           baseDirs.push(`${baseDir}/node_modules/${module}/lib`);
         });
@@ -50,7 +62,9 @@ export const typeLoader = (typeName, callback) => {
                             loaded[fullpath] = require(fullpath);
                           }
                           if (!types.hasOwnProperty(typeName)) {
-                            types[typeName] = loaded[fullpath][typeName];
+                            types[typeName] = loaded[fullpath].name === typeName ?
+                              loaded[fullpath] :
+                              loaded[fullpath][typeName];
                           }
                         }
                       }
