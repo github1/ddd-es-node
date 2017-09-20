@@ -1,0 +1,38 @@
+{
+  "env": {
+    "node": true,
+    "es6": true,
+    "commonjs": true,
+    "jest/globals": true
+  },
+  "plugins": [
+    "jest"
+  ],
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "sourceType": "module"
+  },
+  "rules": {
+    "indent": [
+      "error",
+      2,
+      {
+        "SwitchCase": 1
+      }
+    ],
+    "linebreak-style": [
+      "error",
+      "unix"
+    ],
+    "quotes": 0,
+    "semi": [
+      "error",
+      "always"
+    ],
+    "camelcase": [
+      "error",
+      { "properties": "always" }
+    ],
+    "no-console": 0
+  }
+}

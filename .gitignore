@@ -1,0 +1,10 @@
+dist
+coverage
+node_modules
+fixture
+.idea
+*.iml
+*.log
+*.map
+*nohist*
+.DS_Store
