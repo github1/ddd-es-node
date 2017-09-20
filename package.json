@@ -1,6 +1,6 @@
 {
   "name": "ddd-es-node",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "ddd-es-node",
   "engineStrict": true,
   "engines": {
@@ -14,7 +14,8 @@
     "pretest": "npm run lint",
     "test": "npm run test-only",
     "test-only": "jest --coverage",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "eventstore": "^1.12.3",
