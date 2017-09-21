@@ -2,7 +2,8 @@ export {
   Entity,
   EntityEvent,
   EntityRepository,
-  uuid
+  uuid,
+  useIncrementalUUID
 } from './core/entity';
 
 export {
