@@ -11,7 +11,7 @@ npm install ddd-es-node --save
 ## Usage
 
 ```javascript
-import { Entity } from 'ddd-es-node/dist/src/core/entity';
+import { Entity } from 'ddd-es-node';
 import { OrderCancelledEvent } from './events';
 
 class Order extends Entity {

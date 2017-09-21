@@ -8,7 +8,7 @@ import {
 } from '../core/entity';
 import * as eventstore from 'eventstore';
 import * as events from 'events';
-import { resolveInstanceFromJson } from './type_loader';
+import { resolveInstanceFromJson } from './type_deserializer';
 
 module EventStoreLib {
   export type EventStoreType = {

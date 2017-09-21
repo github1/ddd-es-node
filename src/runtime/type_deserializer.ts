@@ -1,16 +1,19 @@
+/* tslint:disable */
+
 import * as walk from 'walk';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const types = {};
-const loaded = {};
+const types : {[key:string]:any} = {};
+const loaded : {[key:string]:any} = {};
 
 let packageJson = null;
-const loadParentPackageJson = () => {
+const loadParentPackageJson = () : Promise<any> => {
   return packageJson === null ? new Promise((resolve) => {
     const initPath = (() => {
-      if (global && global.resourceBaseDir) {
-        return global.resourceBaseDir;
+      const gbl : any = <any> global;
+      if (gbl && gbl.resourceBaseDir) {
+        return gbl.resourceBaseDir;
       }
       let initPath = path.resolve(path.join(__dirname, '/../../'));
       if (path.basename(initPath) === 'dist') {
@@ -23,7 +26,7 @@ const loadParentPackageJson = () => {
     })();
     const parentPath = path.join(initPath, 'package.json');
     fs.readFile(parentPath, (err, data) => {
-      packageJson = JSON.parse(data);
+      packageJson = JSON.parse(data + '');
       packageJson._path = parentPath;
       resolve(packageJson);
     });
@@ -34,18 +37,18 @@ export const typeLoader = (typeName, callback) => {
   if (types.hasOwnProperty(typeName)) {
     callback(null, types[typeName]);
   } else {
-    loadParentPackageJson().then((packageJson) => {
+    loadParentPackageJson().then((packageJson : any) => {
       const baseDir = path.dirname(packageJson._path);
       const baseDirs = [`${baseDir}/lib`, `${baseDir}/src`, `${baseDir}/spec`];
       if (packageJson.includeModules) {
-        packageJson.includeModules.forEach((module) => {
+        packageJson.includeModules.forEach((module : string) => {
           baseDirs.push(`${baseDir}/node_modules/${module}/src`);
           baseDirs.push(`${baseDir}/node_modules/${module}/lib`);
         });
       }
-      Promise.all(baseDirs.map((baseDir) => {
+      Promise.all(baseDirs.map((baseDir : string) => {
         return new Promise((resolve) => {
-          fs.stat(baseDir, (err) => {
+          fs.stat(baseDir, (err : Error) => {
             if (err) {
               resolve(null);
             } else {
@@ -102,7 +105,7 @@ export const createInstanceFromJson = (objType, json) => {
   }
 };
 
-export const resolveInstanceFromJson = (json, stack) => {
+export const resolveInstanceFromJson = (json, stack?) => {
   if (!stack) {
     try {
       stack = [];

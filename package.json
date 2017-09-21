@@ -1,7 +1,9 @@
 {
   "name": "ddd-es-node",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "ddd-es-node",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "engineStrict": true,
   "engines": {
     "node": ">= 6.9.0"
@@ -10,7 +12,7 @@
     "clean": "rimraf coverage dist tmp",
     "build": "tsc -p tsconfig.release.json",
     "watch": "tsc -w -p tsconfig.release.json",
-    "lint": "eslint '**/*.js' && tslint -t stylish --type-check --exclude '**/*.js' --project 'tsconfig.json'",
+    "lint": "tslint -t stylish --type-check --exclude '**/*.js' --project 'tsconfig.json'",
     "pretest": "npm run lint",
     "test": "npm run test-only",
     "test-only": "jest --coverage",
@@ -37,7 +39,7 @@
     "tslint": "~5.5.0",
     "tslint-microsoft-contrib": "~5.0.1",
     "tsutils": "~2.7.1",
-    "typescript": "~2.4.2"
+    "typescript": "~2.5.2"
   },
   "license": "MIT"
 }
