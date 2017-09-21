@@ -3,7 +3,7 @@ import {
 } from '../../src/runtime/type_deserializer';
 import {
   EntityEvent
-} from '../../src/core/entity';
+} from '../../src/index';
 
 export class ComplexEvent extends EntityEvent {
   constructor(complexType) {

@@ -8,6 +8,7 @@ export {
   EventHandler,
   EventProcessor,
   EventStore,
+  BaseEntityRepository,
   uuid,
   useIncrementalUUID
 } from './core/entity';

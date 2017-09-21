@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { Clock } from './clock';
+import { Clock } from './../index';
 
 export class EntityEvent {
   public streamId : string;

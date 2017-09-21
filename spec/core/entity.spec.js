@@ -2,7 +2,7 @@ import {
   BaseEntityRepository,
   EntityEvent,
   Entity
-} from '../../src/core/entity';
+} from '../../src/index';
 
 class TestEvent extends EntityEvent {
 }
