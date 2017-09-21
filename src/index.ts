@@ -1,7 +1,13 @@
 export {
   Entity,
-  EntityEvent,
   EntityRepository,
+  EntityEvent,
+  EventBus,
+  EventBusSubscription,
+  EventDispatcher,
+  EventHandler,
+  EventProcessor,
+  EventStore,
   uuid,
   useIncrementalUUID
 } from './core/entity';
