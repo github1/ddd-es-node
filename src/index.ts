@@ -1,8 +1,13 @@
 export {
   Entity,
   EntityEvent,
-  EntityRepository
+  EntityRepository,
+  uuid
 } from './core/entity';
+
+export {
+  Clock
+} from './core/clock';
 
 export {
   eventBus,
