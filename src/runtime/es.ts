@@ -62,11 +62,17 @@ export class LocalEventBus implements EventBus {
 
 const USE_DYNAMO_DB : boolean = !(/false/i.test((process.env.USE_DYNAMO_DB || 'false')));
 
-const esCongig : Object = USE_DYNAMO_DB ? {
-  type:'dynamodb',
-  useUndispatchedEventsTable: false
-} : {};
-const es : EventStoreLib.EventStoreType = ((<EventStoreLib.EventStoreTypeFactory>eventstore)(esCongig));
+let esConfig : Object = {};
+if(USE_DYNAMO_DB) {
+  esConfig = {
+    type:'dynamodb',
+    useUndispatchedEventsTable: false
+  };
+}
+if(process.env.RAW_ES_CONFIG) {
+  esConfig = JSON.parse(process.env.USE_DYNAMO_DB + '');
+}
+const es : EventStoreLib.EventStoreType = ((<EventStoreLib.EventStoreTypeFactory>eventstore)(esConfig));
 es.init();
 
 const hydrateEventStream = (events : EventStoreLib.Event[]) => {
