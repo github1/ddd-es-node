@@ -70,7 +70,7 @@ if(USE_DYNAMO_DB) {
   };
 }
 if(process.env.RAW_ES_CONFIG) {
-  esConfig = JSON.parse(process.env.USE_DYNAMO_DB + '');
+  esConfig = JSON.parse(process.env.RAW_ES_CONFIG + '');
 }
 const es : EventStoreLib.EventStoreType = ((<EventStoreLib.EventStoreTypeFactory>eventstore)(esConfig));
 es.init();
