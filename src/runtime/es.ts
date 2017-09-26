@@ -93,7 +93,7 @@ const hydrateEventStream = (events : EventStoreLib.Event[]) => {
   return Promise.all((events||[]).map((event : EventStoreLib.Event) => {
     return new Promise((resolve : Function) => {
       event.payload.streamId = event.streamId || event.aggregateId;
-      if(USE_DYNAMO_DB) {
+      if(esConfig.hasOwnProperty('type')) {
         // ensure types are restored after deserialization
         (<Promise<EventStoreLib.EventPayload>> resolveInstanceFromJson(event.payload))
           .then((resolved : EventStoreLib.EventPayload) => {
