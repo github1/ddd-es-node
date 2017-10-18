@@ -2,12 +2,14 @@ import { v4 } from 'uuid';
 import { Clock } from './../index';
 
 export class EntityEvent {
+  public uuid : string;
   public streamId : string;
   public typeNameMetaData: string;
   public name : string;
   public timestamp : number;
 
   constructor() {
+    this.uuid = v4();
     this.typeNameMetaData = this.constructor.name;
     this.name = this.typeNameMetaData;
     this.timestamp = Clock.now();
