@@ -3,7 +3,8 @@ import {
 } from './core/clock';
 
 import {
-  useIncrementalUUID
+  freezeUUID,
+  unfreezeUUID
 } from './core/entity';
 
 export {
@@ -21,7 +22,8 @@ export {
 } from './core/entity';
 
 export {
-  useIncrementalUUID
+  freezeUUID,
+  unfreezeUUID
 };
 
 export {
@@ -37,9 +39,9 @@ export {
 export const testMode = (value : boolean) => {
   if (value === undefined ? true : value) {
     Clock.freeze();
-    useIncrementalUUID(true);
+    freezeUUID();
   } else {
     Clock.unfreeze();
-    useIncrementalUUID(false);
+    unfreezeUUID();
   }
 };

@@ -1,15 +1,18 @@
 import { v4 } from 'uuid';
 import { Clock } from './../index';
 
-let incrementalUUID : boolean = false;
-let uidCount : number = 0;
+let frozenUUID : string = null;
 
-export const useIncrementalUUID = (value : boolean) => {
-  incrementalUUID = value;
+export const freezeUUID = (value? : string) => {
+  frozenUUID = value || v4();
+};
+
+export const unfreezeUUID = () => {
+  frozenUUID = null;
 };
 
 export const uuid = () : string => {
-  return incrementalUUID ? `${uidCount++}` : v4();
+  return frozenUUID === null ? v4() : frozenUUID;
 };
 
 export class EntityEvent {

@@ -13,9 +13,8 @@ describe('index', () => {
     it('freezes the clock', () => {
       expect(Clock.now()).toEqual(0);
     });
-    it('uses incremental uuids', () => {
-      expect(uuid()).toEqual('0');
-      expect(uuid()).toEqual('1');
+    it('uses freezes the uuid', () => {
+      expect(uuid()).toEqual(uuid());
     });
   });
 
@@ -27,8 +26,7 @@ describe('index', () => {
       expect(Clock.now()).toBeGreaterThan(0);
     });
     it('uses random uuids', () => {
-      console.log(uuid());
-      expect(uuid()).toMatch(/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/);
+      expect(uuid()).not.toEqual(uuid());
     });
   });
 
