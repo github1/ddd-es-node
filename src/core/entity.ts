@@ -1,6 +1,17 @@
 import { v4 } from 'uuid';
 import { Clock } from './../index';
 
+let incrementalUUID : boolean = false;
+let uidCount : number = 0;
+
+export const useIncrementalUUID = (value : boolean) => {
+  incrementalUUID = value;
+};
+
+export const uuid = () : string => {
+  return incrementalUUID ? `${uidCount++}` : v4();
+};
+
 export class EntityEvent {
   public uuid : string;
   public streamId : string;
@@ -9,7 +20,7 @@ export class EntityEvent {
   public timestamp : number;
 
   constructor() {
-    this.uuid = v4();
+    this.uuid = uuid();
     this.typeNameMetaData = this.constructor.name;
     this.name = this.typeNameMetaData;
     this.timestamp = Clock.now();
@@ -154,14 +165,3 @@ export class Entity {
   }
 
 }
-
-let incrementalUUID : boolean = false;
-let uidCount : number = 0;
-
-export const useIncrementalUUID = (value : boolean) => {
-  incrementalUUID = value;
-};
-
-export const uuid = () : string => {
-  return incrementalUUID ? `${uidCount++}` : v4();
-};

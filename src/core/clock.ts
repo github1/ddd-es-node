@@ -2,7 +2,7 @@ let time : number = -1;
 
 export module Clock {
 
-  export function freeze(at : number) : void {
+  export function freeze(at : number = 0) : void {
     time = at;
   }
 
