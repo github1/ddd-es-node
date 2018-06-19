@@ -2,20 +2,19 @@ module.exports = {
   verbose: true,
   testEnvironment: 'node',
   transform: {
-    '^.+\\.js$': '<rootDir>/node_modules/babel-jest',
-    '.(ts|tsx)': '<rootDir>/preprocessor.js'
+    "^.+\\.js$": '<rootDir>/node_modules/babel-jest',
+    "^.+\\.ts$": '<rootDir>/node_modules/ts-jest'
   },
   moduleFileExtensions: [
     'ts',
-    'tsx',
     'js',
-    'jsx',
     'node'
   ],
-  testRegex: '/spec/.*\\.(ts|js)x?$',
+  testRegex: '.*\\.test\\.js$',
+  mapCoverage: true,
   coverageDirectory: 'coverage',
   collectCoverageFrom: [
-    'src/**/*.{ts,tsx,js,jsx}',
+    'src/**/*.{ts,js}',
     '!src/**/*.d.ts'
   ]
 };

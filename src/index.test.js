@@ -1,20 +1,20 @@
 import {
   Clock,
   testMode,
-  uuid
+  EventUUID
 } from '../src/index';
 
 describe('index', () => {
 
   describe('when testMode is enabled', () => {
-    beforeEach(() => {
-      testMode(true);
-    });
-    it('freezes the clock', () => {
-      expect(Clock.now()).toEqual(0);
-    });
-    it('uses freezes the uuid', () => {
-      expect(uuid()).toEqual(uuid());
+    [() => testMode(true), () => testMode()].forEach(before => {
+      beforeEach(before);
+      it('freezes the clock', () => {
+        expect(Clock.now()).toEqual(0);
+      });
+      it('uses freezes the uuid', () => {
+        expect(EventUUID.uuid()).toEqual(EventUUID.uuid());
+      });
     });
   });
 
@@ -26,7 +26,7 @@ describe('index', () => {
       expect(Clock.now()).toBeGreaterThan(0);
     });
     it('uses random uuids', () => {
-      expect(uuid()).not.toEqual(uuid());
+      expect(EventUUID.uuid()).not.toEqual(EventUUID.uuid());
     });
   });
 

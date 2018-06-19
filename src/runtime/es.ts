@@ -3,12 +3,11 @@ import {
   EntityRepository,
   EntityEvent,
   EventStore,
-  EventBus,
-  EventBusSubscription
-} from '../core/entity';
+  EventBus
+} from '../core';
+import { LocalEventBus } from './local-event-bus';
 import * as eventstore from 'eventstore';
-import * as events from 'events';
-import { resolveInstanceFromJson } from './type_deserializer';
+import { resolveInstanceFromJson } from './type-deserializer';
 
 module EventStoreLib {
   export type EventStoreType = {
@@ -16,60 +15,22 @@ module EventStoreLib {
     getEventStream : Function,
     getEvents : Function
   };
-  export type EventStoreTypeFactory = (options?: Object) => EventStoreType;
+  export type EventStoreTypeFactory = (options? : Object) => EventStoreType;
   export type Stream = { addEvent : Function, addEvents : Function, commit : Function, events : Event[], eventsToDispatch : Event[] };
   export type EventPayload = { streamId : string, name : string };
   export type Event = { name : string, streamId : string, aggregateId: string, payload : EventPayload };
 }
 
-class LocalEventBusSubscription implements EventBusSubscription {
-  private emitter : events.EventEmitter;
-  private listener : (event : EntityEvent) => void;
-  constructor(emitter : events.EventEmitter, listener : (event : EntityEvent) => void) {
-    this.emitter = emitter;
-    this.listener = listener;
-  }
-  public unsubscribe() : void {
-    this.emitter.removeListener('event', this.listener);
-  }
-}
-
-export class LocalEventBus implements EventBus {
-
-  private eventStore : EventStore;
-  private emitter : events.EventEmitter = new events.EventEmitter();
-
-  constructor(eventStore : EventStore) {
-    this.eventStore = eventStore;
-  }
-
-  public subscribe(listener : (event : EntityEvent, isReplaying? : boolean) => void,
-                   options? : { [key:string]: string | boolean }) : EventBusSubscription {
-    if(options && options['replay']) {
-      this.eventStore.replayAll(listener);
-    }
-    const emitterListener : (event : EntityEvent, isReplaying? : boolean) => void = (event : EntityEvent) : void => {
-      listener(event, false);
-    };
-    this.emitter.on('event', emitterListener);
-    return new LocalEventBusSubscription(this.emitter, emitterListener);
-  }
-
-  public emit(event : EntityEvent) : void {
-    this.emitter.emit('event', event);
-  }
-}
-
 const USE_DYNAMO_DB : boolean = !(/false/i.test((process.env.USE_DYNAMO_DB || 'false')));
 
 let esConfig : Object = {};
-if(USE_DYNAMO_DB) {
+if (USE_DYNAMO_DB) {
   esConfig = {
-    type:'dynamodb',
+    type: 'dynamodb',
     useUndispatchedEventsTable: false
   };
 }
-if(process.env.RAW_ES_CONFIG) {
+if (process.env.RAW_ES_CONFIG) {
   esConfig = <Object> JSON.parse(`${process.env.RAW_ES_CONFIG}`);
 }
 let getEsRes : Function;
@@ -82,7 +43,7 @@ const getEs : Promise<EventStoreLib.EventStoreType> = new Promise<EventStoreLib.
 // tslint:enable
 const es : EventStoreLib.EventStoreType = ((<EventStoreLib.EventStoreTypeFactory>eventstore)(esConfig));
 es.init((err : Error) => {
-  if(err) {
+  if (err) {
     getEsRej(err);
   } else {
     getEsRes(es);
@@ -90,10 +51,10 @@ es.init((err : Error) => {
 });
 
 const hydrateEventStream = (events : EventStoreLib.Event[]) => {
-  return Promise.all((events||[]).map((event : EventStoreLib.Event) => {
+  return Promise.all((events || []).map((event : EventStoreLib.Event) => {
     return new Promise((resolve : Function) => {
       event.payload.streamId = event.streamId || event.aggregateId;
-      if(esConfig.hasOwnProperty('type')) {
+      if (esConfig.hasOwnProperty('type')) {
         // ensure types are restored after deserialization
         (<Promise<EventStoreLib.EventPayload>> resolveInstanceFromJson(event.payload))
           .then((resolved : EventStoreLib.EventPayload) => {
@@ -150,7 +111,7 @@ export class EventStoreLibEventStore implements EventStore {
             results.forEach((event : EventStoreLib.Event) => {
               handler(<EntityEvent> event.payload, true);
             });
-            if(done) {
+            if (done) {
               done();
             }
           }).catch((err : Error) => {
@@ -178,7 +139,7 @@ function eventDispatcher(streamId : string, events : EntityEvent[]) : Promise<vo
         } else {
           stream.addEvents(events);
           stream.commit((err : Error, stream : EventStoreLib.Stream) => {
-            if(err) {
+            if (err) {
               console.log(err);
               resolve();
             } else {

@@ -1,47 +1,19 @@
-import {
-  Clock
-} from './core/clock';
+import { Clock, EventUUID } from './core';
 
-import {
-  freezeUUID,
-  unfreezeUUID
-} from './core/entity';
-
-export {
-  Entity,
-  EntityRepository,
-  EntityEvent,
-  EventBus,
-  EventBusSubscription,
-  EventDispatcher,
-  EventHandler,
-  EventProcessor,
-  EventStore,
-  BaseEntityRepository,
-  uuid
-} from './core/entity';
-
-export {
-  freezeUUID,
-  unfreezeUUID
-};
-
-export {
-  Clock
-};
+export * from './core';
 
 export {
   eventBus,
   entityRepository,
   eventStore
-} from './runtime/es';
+} from './runtime';
 
 export const testMode = (value : boolean) => {
   if (value === undefined ? true : value) {
     Clock.freeze();
-    freezeUUID();
+    EventUUID.freezeUUID();
   } else {
     Clock.unfreeze();
-    unfreezeUUID();
+    EventUUID.unfreezeUUID();
   }
 };

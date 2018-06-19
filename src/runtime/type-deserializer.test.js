@@ -1,6 +1,7 @@
 import {
-  resolveInstanceFromJson
-} from '../../src/runtime/type_deserializer';
+  resolveInstanceFromJson,
+  createInstanceFromJson
+} from '../../src/runtime/type-deserializer';
 import {
   EntityEvent
 } from '../../src/index';
@@ -19,7 +20,7 @@ export class ComplexType {
   }
 }
 
-describe('typeLoader', () => {
+describe('type-deserializer', () => {
 
   describe('resolveInstanceFromJson', () => {
     describe('with an object with nested types', () => {
@@ -109,6 +110,20 @@ describe('typeLoader', () => {
         }).then(() => {
           expect(errorThrown).toEqual(true);
         });
+      });
+    });
+  });
+
+  describe('createInstanceFromJson', () => {
+    const dataProvided = { value: 'aValue' };
+    describe('when an JSON object is supplied', () => {
+      it('sets the properties on the new instance', () => {
+        expect(createInstanceFromJson(ComplexType, dataProvided).value).toBe('aValue');
+      });
+    });
+    describe('when a JSON string is supplied', () => {
+      it('sets the properties on the new instance', () => {
+        expect(createInstanceFromJson(ComplexType, JSON.stringify(dataProvided)).value).toBe('aValue');
       });
     });
   });
