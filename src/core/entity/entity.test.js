@@ -9,20 +9,21 @@ class TestEvent extends EntityEvent {
 
 class TestEntity extends Entity {
   constructor(id) {
-    super(id, Entity.CONFIG((self, event) => {
+    super(id, (self, event) => {
       self.lastEventReceived = event;
-    }));
+    });
   }
+
   doSomething() {
     this.dispatch(this.id, new TestEvent());
   }
 }
 
 class TestEntitySuperclass extends Entity {
-  constructor(id, eventProcessor) {
-    super(id, Entity.CONFIG((self, event) => {
+  constructor(id, eventHandler) {
+    super(id, (self, event) => {
       self.lastEventReceivedFromSuperclass = event;
-    }).apply(eventProcessor));
+    }, eventHandler);
   }
 }
 
@@ -60,7 +61,7 @@ describe('BaseEntityRepository', () => {
       repo = new BaseEntityRepository(dispatcher, store);
     });
     afterEach(() => {
-      while(events.length > 0) {
+      while (events.length > 0) {
         events.pop();
       }
     });

@@ -16,11 +16,11 @@ import { OrderCancelledEvent } from './events';
 
 class Order extends Entity {
   constructor(id) {
-    super(id, Entity.CONFIG((self, event) => {
+    super(id, (self, event) => {
       if(event instanceof OrderCancelledEvent) {
         this.cancelled = true;
       }
-    }));
+    });
   }
   cancel() {
     if(this.cancelled) {

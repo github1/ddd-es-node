@@ -5,40 +5,26 @@ import {
 
 export type EventHandler = (entity : Entity, event : EntityEvent) => void;
 
-export class EventProcessor {
-  private handler : EventHandler;
-
-  public apply(newHandler : EventHandler) : EventProcessor {
-    const parentHandler : EventHandler = this.handler;
-    let handlerToSet : EventHandler = newHandler;
-    if (parentHandler) {
-      handlerToSet = (entity : Entity, event : EntityEvent) : void => {
-        newHandler(entity, event);
-        parentHandler(entity, event);
-      };
+const composeHandlers = (...handlers : EventHandler[]) : EventHandler => {
+  if (handlers.length === 1) {
+    return handlers[0];
+  }
+  return (entity : Entity, event : EntityEvent) => {
+    for (let i = handlers.length - 1; i >= 0; --i) {
+      handlers[i](entity, event);
     }
-    this.handler = handlerToSet;
-    return this;
-  }
-
-  public accept(entity : Entity, event : EntityEvent) : void {
-    this.handler(entity, event);
-  }
-}
+  };
+};
 
 export class Entity {
   protected id : string;
-  protected config : EventProcessor;
+  protected applier : EventHandler;
   protected dispatch : VoidEventDispatcher;
 
   constructor(id : string,
-              config : EventProcessor) {
+              ...appliers : EventHandler[]) {
     this.id = id;
-    this.config = config;
-  }
-
-  public static CONFIG(newHandler : EventHandler) : EventProcessor {
-    return new EventProcessor().apply(newHandler);
+    this.applier = composeHandlers(...appliers);
   }
 
   public init(dispatch : VoidEventDispatcher) : void {
@@ -46,7 +32,7 @@ export class Entity {
   }
 
   public apply(event : EntityEvent) : void {
-    this.config.accept(this, event);
+    this.applier(this, event);
   }
 
 }
