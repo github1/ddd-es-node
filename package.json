@@ -1,6 +1,6 @@
 {
   "name": "ddd-es-node",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "ddd-es-node",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -17,7 +17,7 @@
     "test": "npm run test-only",
     "test-only": "jest --coverage",
     "test:watch": "jest --watch",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run clean && npm run build"
   },
   "dependencies": {
     "eventstore": "^1.12.3",
