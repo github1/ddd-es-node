@@ -65,7 +65,7 @@ describe('type-deserializer', () => {
         });
       });
     });
-    describe('with an object already resolved', () => {
+    describe('with an already instantiated object', () => {
       it('it returns the object', () => {
         return resolveInstanceFromJson(new ComplexEvent(
           new ComplexType('foo')
@@ -73,6 +73,17 @@ describe('type-deserializer', () => {
           expect(result.constructor).toEqual(ComplexEvent);
           expect(result.complexType.constructor).toEqual(ComplexType);
           expect(result.complexType.value).toEqual('foo');
+        });
+      });
+      describe('when the source is not found', () => {
+        it('it returns the object', () => {
+          const types = [];
+          types[0] = function NonStandard() {
+            this.typeNameMetaData = 'NonStandard';
+          };
+          return resolveInstanceFromJson(new types[0]()).then((result) => {
+            expect(result.constructor.name).toEqual('NonStandard');
+          });
         });
       });
     });

@@ -109,6 +109,10 @@ export const resolveInstanceFromJson = (json, stack?) => {
   if (!stack) {
     try {
       stack = [];
+      const isString = typeof json === 'string';
+      if (json && !isString && json.constructor && !/^(object|number|array)$/i.test(json.constructor.name)) {
+        return Promise.resolve(json);
+      }
       json = typeof json === 'string' ? JSON.parse(json) : json;
       const parent = {resolved: json};
       stack.push({parent: parent, field: 'resolved'});
