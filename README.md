@@ -10,11 +10,21 @@ npm install ddd-es-node --save
 
 ## Usage
 
-```javascript
-import { Entity } from 'ddd-es-node';
-import { OrderCancelledEvent } from './events';
+Define events.
 
-class Order extends Entity {
+```javascript
+import { EntityEvent } from "ddd-es-node";
+export class OrderCancelledEvent extends EntityEvent {
+}
+```
+
+Create rich domain entities.
+
+```javascript
+import { Entity } from "ddd-es-node";
+import { OrderCancelledEvent } from "./events";
+
+export class Order extends Entity {
   constructor(id) {
     super(id, (self, event) => {
       if(event instanceof OrderCancelledEvent) {
@@ -30,4 +40,17 @@ class Order extends Entity {
     }
   }
 }
+```
+
+Load entities and execute commands.
+
+```javascript
+import { entityRepository } from "ddd-es-node";
+import { Order } from "./orders";
+
+export const cancelOrder = (id) => {
+  return entityRepository
+      .load(Order, id)
+      .then(order => order.cancel());
+};
 ```

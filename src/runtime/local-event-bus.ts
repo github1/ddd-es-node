@@ -7,10 +7,8 @@ import {
 import * as events from 'events';
 
 export class LocalEventBusSubscription implements EventBusSubscription {
-  private emitter : events.EventEmitter;
-  private listener : (event : EntityEvent) => void;
-
-  constructor(emitter : events.EventEmitter, listener : (event : EntityEvent) => void) {
+  constructor(private emitter : events.EventEmitter,
+              private readonly listener : (event : EntityEvent) => void) {
     this.emitter = emitter;
     this.listener = listener;
   }
@@ -22,11 +20,11 @@ export class LocalEventBusSubscription implements EventBusSubscription {
 
 export class LocalEventBus implements EventBus {
 
-  private eventStore : EventStore;
-  private emitter : events.EventEmitter = new events.EventEmitter();
+  private readonly emitter : events.EventEmitter;
 
-  constructor(eventStore : EventStore) {
+  constructor(private eventStore : EventStore) {
     this.eventStore = eventStore;
+    this.emitter = new events.EventEmitter();
   }
 
   public subscribe(listener : (event : EntityEvent, isReplaying? : boolean) => void,

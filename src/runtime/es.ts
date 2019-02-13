@@ -8,6 +8,8 @@ import {
 import { LocalEventBus } from './local-event-bus';
 import * as eventstore from 'eventstore';
 import { resolveInstanceFromJson } from './type-deserializer';
+import * as fs from 'fs';
+import * as path from 'path';
 
 module EventStoreLib {
   export type EventStoreType = {
@@ -21,30 +23,19 @@ module EventStoreLib {
   export type Event = { name : string, streamId : string, aggregateId: string, payload : EventPayload };
 }
 
-const USE_DYNAMO_DB : boolean = !(/false/i.test((process.env.USE_DYNAMO_DB || 'false')));
-
-let esConfig : Object = {};
-if (USE_DYNAMO_DB) {
-  esConfig = {
-    type: 'dynamodb',
-    useUndispatchedEventsTable: false
-  };
-}
-if (process.env.RAW_ES_CONFIG) {
-  esConfig = <Object> JSON.parse(`${process.env.RAW_ES_CONFIG}`);
-}
+const ES_CONFIG_PATH : string = path.resolve(process.env.ES_CONFIG || './es-config.js');
+//  tslint:disable-next-line:non-literal-require no-var-requires no-unsafe-any
+const esConfig : {} = fs.existsSync(ES_CONFIG_PATH) ? require(ES_CONFIG_PATH) : {};
 let getEsRes : Function;
-let getEsRej : Function;
 // tslint:disable:promise-must-complete
-const getEs : Promise<EventStoreLib.EventStoreType> = new Promise<EventStoreLib.EventStoreType>((resolve : Function, reject : Function) => {
+const getEs : Promise<EventStoreLib.EventStoreType> = new Promise<EventStoreLib.EventStoreType>((resolve : Function) => {
   getEsRes = resolve;
-  getEsRej = reject;
 });
-// tslint:enable
 const es : EventStoreLib.EventStoreType = ((<EventStoreLib.EventStoreTypeFactory>eventstore)(esConfig));
 es.init((err : Error) => {
   if (err) {
-    getEsRej(err);
+    // fatal
+    throw err;
   } else {
     getEsRes(es);
   }
@@ -102,6 +93,7 @@ export class EventStoreLibEventStore implements EventStore {
   }
 
   public replayAll(handler : (event : EntityEvent, isReplaying? : boolean) => void, done? : () => void) : void {
+    // tslint:disable:no-floating-promises
     getEs.then((es : EventStoreLib.EventStoreType) => {
       es.getEvents(0, (err : Error, events : EventStoreLib.Event[]) => {
         if (err) {
@@ -156,8 +148,6 @@ function eventDispatcher(streamId : string, events : EntityEvent[]) : Promise<vo
           });
         }
       });
-    }).catch((err : Error) => {
-      throw err;
     });
   });
 }
