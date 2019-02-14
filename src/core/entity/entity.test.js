@@ -15,7 +15,7 @@ class TestEntity extends Entity {
   }
 
   doSomething() {
-    this.dispatch(this.id, new TestEvent());
+    this.dispatch(new TestEvent());
   }
 }
 

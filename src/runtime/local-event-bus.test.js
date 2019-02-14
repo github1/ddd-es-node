@@ -1,4 +1,4 @@
-import {LocalEventBus} from './local-event-bus';
+import { LocalEventBus } from './local-event-bus';
 
 describe('LocalEventBus', () => {
   let store;

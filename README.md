@@ -37,7 +37,7 @@ export class Order extends Entity {
     if(this.cancelled) {
       throw new Error('Order already cancelled');
     } else {
-      this.dispatch(this.id, new OrderCancelledEvent());
+      this.dispatch(new OrderCancelledEvent());
     }
   }
 }

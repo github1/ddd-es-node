@@ -3,12 +3,12 @@ import {
   EntityEvent,
   EventDispatcher,
   EventStore
-} from './../event';
+} from '../event';
 
 /* tslint:disable */
 export class ChainInterceptorPromise<T> extends Promise<T> {
-  private promise : Promise<T>;
-  private afterChain : Function;
+  private readonly promise : Promise<T>;
+  private readonly afterChain : Function;
 
   constructor(promise : Promise<T>, afterChain? : Function) {
     super((resolve : Function)=> {
@@ -36,8 +36,8 @@ export interface EntityRepository {
 
 export class BaseEntityRepository implements EntityRepository {
 
-  private eventDispatcher : EventDispatcher;
-  private eventStore : EventStore;
+  private readonly eventDispatcher : EventDispatcher;
+  private readonly eventStore : EventStore;
 
   constructor(eventDispatcher : EventDispatcher, eventStore : EventStore) {
     this.eventDispatcher = eventDispatcher;
@@ -48,7 +48,8 @@ export class BaseEntityRepository implements EntityRepository {
     const eventsToDispatch : EntityEvent[] = [];
     return new ChainInterceptorPromise(new Promise((resolve : Function) => {
       const entity : Entity = (<Entity> new construct(id));
-      entity.init((streamId : string, event : EntityEvent) : void => {
+      const streamId: string = id;
+      entity.init((event : EntityEvent) : void => {
         event.streamId = streamId;
         eventsToDispatch.push(event);
         entity.apply(event);

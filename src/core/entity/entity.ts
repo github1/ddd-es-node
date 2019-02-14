@@ -1,7 +1,7 @@
 import {
   EntityEvent,
   VoidEventDispatcher
-} from './../event';
+} from '../event';
 
 export type EventHandler = (entity : Entity, event : EntityEvent) => void;
 
