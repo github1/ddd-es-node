@@ -14,6 +14,7 @@ Define events.
 
 ```javascript
 import { EntityEvent } from "ddd-es-node";
+
 export class OrderCancelledEvent extends EntityEvent {
 }
 ```
@@ -54,3 +55,17 @@ export const cancelOrder = (id) => {
       .then(order => order.cancel());
 };
 ```
+
+Add subscribers.
+
+```javascript
+import { eventBus } from "ddd-es-node";
+import { OrderCancelledEvent } from "./events";
+
+eventBus.subscribe((event) => {
+  if (event instanceof OrderCancelledEvent) {
+    // do something
+  }
+}, { replay: true });
+```
+
