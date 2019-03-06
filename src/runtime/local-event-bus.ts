@@ -7,7 +7,7 @@ import {
 import * as events from 'events';
 
 export class LocalEventBusSubscription implements EventBusSubscription {
-  constructor(private emitter : events.EventEmitter,
+  constructor(private readonly emitter : events.EventEmitter,
               private readonly listener : (event : EntityEvent) => void) {
     this.emitter = emitter;
     this.listener = listener;
@@ -22,7 +22,7 @@ export class LocalEventBus implements EventBus {
 
   private readonly emitter : events.EventEmitter;
 
-  constructor(private eventStore : EventStore) {
+  constructor(private readonly eventStore : EventStore) {
     this.eventStore = eventStore;
     this.emitter = new events.EventEmitter();
   }

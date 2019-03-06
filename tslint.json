@@ -2,6 +2,11 @@
   "extends": [
     "tslint-microsoft-contrib"
   ],
+  "linterOptions": {
+    "exclude": [
+      "src/**/*test.ts"
+    ]
+  },
   "rules": {
     "align": false,
     "completed-docs": false,

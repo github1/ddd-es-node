@@ -26,6 +26,7 @@
     "walk": "^2.3.9"
   },
   "devDependencies": {
+    "@types/jest": "^24.0.9",
     "@types/node": "^8.0.17",
     "@types/uuid": "^3.4.0",
     "babel-jest": "^20.0.3",
@@ -33,13 +34,13 @@
     "babel-preset-node6": "^11.0.0",
     "eslint": "^4.4.1",
     "eslint-plugin-jest": "^20.0.3",
-    "jest": "^20.0.4",
+    "jest": "23.6.0",
     "rimraf": "~2.6.1",
-    "ts-jest": "^22.4.6",
-    "tslint": "~5.5.0",
-    "tslint-microsoft-contrib": "~5.0.1",
+    "ts-jest": "^23.10.5",
+    "tslint": "^5.12.1",
+    "tslint-microsoft-contrib": "^6.0.0",
     "tsutils": "~2.7.1",
-    "typescript": "~2.5.2"
+    "typescript": "3.3.3"
   },
   "license": "MIT"
 }

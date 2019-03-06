@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 
-let frozenUUID : string = null;
+let frozenUUID : string;
 
 export module EventUUID {
 
@@ -9,11 +9,11 @@ export module EventUUID {
   };
 
   export const unfreezeUUID = () => {
-    frozenUUID = null;
-
+    frozenUUID = undefined;
   };
+
   export const uuid = () : string => {
-    return frozenUUID === null ? v4() : frozenUUID;
+    return frozenUUID === undefined ? v4() : frozenUUID;
   };
 
 }

@@ -5,7 +5,7 @@ import {
   EventStore
 } from '../event';
 
-/* tslint:disable */
+// tslint:disable
 export class ChainInterceptorPromise<T> extends Promise<T> {
   private readonly promise : Promise<T>;
   private readonly afterChain : Function;
@@ -28,7 +28,7 @@ export class ChainInterceptorPromise<T> extends Promise<T> {
     return <ChainInterceptorPromise<T>> this.promise.catch(a);
   }
 }
-/* tslint:enable */
+// tslint:enable
 
 export interface EntityRepository {
   load(construct : {new(arg : string)}, id : string) : Promise<Entity>;

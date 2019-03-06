@@ -2,34 +2,37 @@ import {
   BaseEntityRepository,
   Entity
 } from './index';
-import { EntityEvent } from './../event';
+import { EntityEvent } from '../event';
 
 class TestEvent extends EntityEvent {
 }
 
 class TestEntity extends Entity {
-  constructor(id) {
-    super(id, (self, event) => {
+  protected lastEventReceived: EntityEvent;
+  constructor(id: string) {
+    super(id, (self: TestEntity, event: EntityEvent) => {
       self.lastEventReceived = event;
     });
   }
 
-  doSomething() {
+  public doSomething() {
     this.dispatch(new TestEvent());
   }
 }
 
 class TestEntitySuperclass extends Entity {
-  constructor(id, eventHandler) {
-    super(id, (self, event) => {
+  protected lastEventReceivedFromSuperclass: EntityEvent;
+  constructor(id: string, eventHandler) {
+    super(id, (self: TestEntitySuperclass, event: EntityEvent) => {
       self.lastEventReceivedFromSuperclass = event;
     }, eventHandler);
   }
 }
 
 class TestEntitySubclass extends TestEntitySuperclass {
-  constructor(id) {
-    super(id, (self, event) => {
+  protected lastEventReceivedFromSubclass: EntityEvent;
+  constructor(id: string) {
+    super(id, (self: TestEntitySubclass, event: EntityEvent) => {
       self.lastEventReceivedFromSubclass = event;
     });
   }
@@ -41,10 +44,10 @@ describe('BaseEntityRepository', () => {
     let repo;
     let events = [];
     beforeEach(() => {
-      const dispatcher = (id, event) => {
-        return new Promise((resolve) => {
+      const dispatcher = () => {
+        return new Promise<void>((resolve) => {
           setTimeout(() => {
-            resolve(event);
+            resolve();
           }, 1);
         });
       };
@@ -56,6 +59,8 @@ describe('BaseEntityRepository', () => {
           }))).then(() => {
             done();
           });
+        },
+        replayAll: () => {
         }
       };
       repo = new BaseEntityRepository(dispatcher, store);
