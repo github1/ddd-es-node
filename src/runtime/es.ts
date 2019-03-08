@@ -154,10 +154,7 @@ function eventDispatcher(streamId : string, ...events : EntityEvent[]) : Promise
                   });
                   resolve();
                 })
-                .catch((err : Error) => {
-                  console.error(err);
-                  resolve();
-                });
+                .catch(reject);
             }
           });
         }
