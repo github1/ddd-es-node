@@ -1,5 +1,6 @@
 import {
-  BaseEntityRepository,
+  DecoratedEntityRepository,
+  DecoratedEventBus,
   EntityEvent,
   EntityRepository,
   EventBus,
@@ -55,113 +56,101 @@ es.init((err : Error) => {
   }
 });
 
-const hydrateEventStream = (events : EventStoreLib.Event[]) => {
-  return Promise.all((events || []).map((event : EventStoreLib.Event) => {
-    return new Promise((resolve : Function) => {
-      event.payload.streamId = event.streamId || event.aggregateId;
-      if (esConfig.hasOwnProperty('type')) {
-        // ensure types are restored after deserialization
-        (<Promise<EventStoreLib.EventPayload>>resolveInstanceFromJson(event.payload))
-          .then((resolved : EventStoreLib.EventPayload) => {
-            resolve({
-              name: event.payload.name,
-              streamId: event.streamId || event.aggregateId,
-              payload: resolved
-            });
-          })
-          .catch((error : Error) => {
-            console.error(error);
+const hydrateEventStream = (events : EventStoreLib.Event[]): Promise<EventStoreLib.EventPayload[]> => {
+  return Promise.all((events || [])
+    .map((event : EventStoreLib.Event) => {
+      return new Promise<EventStoreLib.EventPayload>((resolve : Function, reject : (err : Error) => void) => {
+        event.payload.streamId = event.streamId || event.aggregateId;
+        if (esConfig.hasOwnProperty('type')) {
+          // ensure types are restored after deserialization
+          (<Promise<EventStoreLib.EventPayload>>resolveInstanceFromJson(event.payload))
+            .then((resolved : EventStoreLib.EventPayload) => {
+              resolve(resolved);
+            })
+            .catch(reject);
+        } else {
+          resolve({
+            name: event.payload.name,
+            streamId: event.streamId || event.aggregateId,
+            payload: event.payload
           });
-      } else {
-        resolve({
-          name: event.payload.name,
-          streamId: event.streamId || event.aggregateId,
-          payload: event.payload
-        });
-      }
-    });
-  }));
+        }
+      });
+    }));
 };
 
 export class EventStoreLibEventStore implements EventStore {
-  public replay(id : string, handler : (event : EntityEvent, isReplaying? : boolean) => void, done? : () => void) : void {
-    getEs
+  public replay(id : string, handler : (event : EntityEvent, isReplaying? : boolean) => void) : Promise<void> {
+    return getEs
       .then((es : EventStoreLib.EventStoreType) => {
-        es.getEventStream(id, (err : Error, stream : EventStoreLib.Stream) => {
-          if (err) {
-            console.log(err);
-          } else {
-            hydrateEventStream(stream.events)
-              .then((results : EventStoreLib.Event[]) => {
-                results.forEach((event : EventStoreLib.Event) => {
-                  handler(<EntityEvent>event.payload, true);
-                });
-                if (done) {
-                  done();
-                }
-              })
-              .catch((err : Error) => {
-                throw err;
-              });
-          }
+        return new Promise((resolve : () => void, reject : (error : Error) => void) => {
+          es.getEventStream(id, (err : Error, stream : EventStoreLib.Stream) => {
+            if (err) {
+              reject(err);
+            } else {
+              hydrateEventStream(stream.events)
+                .then((results : EventStoreLib.EventPayload[]) => {
+                  results.forEach((event : EventStoreLib.EventPayload) => {
+                    handler(<EntityEvent>event, true);
+                  });
+                  resolve();
+                })
+                .catch(reject);
+            }
+          });
         });
       })
-      .catch((err : Error) => {
-        throw err;
+      .then(() => {
+        // void
       });
   }
 
-  public replayAll(handler : (event : EntityEvent, isReplaying? : boolean) => void, done? : () => void) : void {
-    // tslint:disable:no-floating-promises
-    getEs
+  public replayAll(handler : (event : EntityEvent, isReplaying? : boolean) => void) : Promise<void> {
+    return getEs
       .then((es : EventStoreLib.EventStoreType) => {
-        es.getEvents(0, (err : Error, events : EventStoreLib.Event[]) => {
-          if (err) {
-            throw err;
-          } else {
-            hydrateEventStream(events)
-              .then((results : EventStoreLib.Event[]) => {
-                results.forEach((event : EventStoreLib.Event) => {
-                  handler(<EntityEvent>event.payload, true);
-                });
-                if (done) {
-                  done();
-                }
-              })
-              .catch((err : Error) => {
-                throw err;
-              });
-          }
+        return new Promise((resolve : () => void, reject : (err : Error) => void) => {
+          es.getEvents(0, (err : Error, events : EventStoreLib.Event[]) => {
+            if (err) {
+              reject(err);
+            } else {
+              hydrateEventStream(events)
+                .then((results : EventStoreLib.Event[]) => {
+                  results.forEach((event : EventStoreLib.Event) => {
+                    handler(<EntityEvent>event.payload, true);
+                  });
+                  resolve();
+                })
+                .catch(reject);
+            }
+          });
         });
       })
-      .catch((err : Error) => {
-        throw err;
+      .then(() => {
+        // void
       });
   }
 }
 
 export const eventStore : EventStore = new EventStoreLibEventStore();
 
-export const eventBus : EventBus = new LocalEventBus(eventStore);
+export const eventBus : EventBus = new DecoratedEventBus(new LocalEventBus(eventStore));
 
-function eventDispatcher(streamId : string, events : EntityEvent[]) : Promise<void> {
-  return new Promise<void>((resolve : Function) => {
-    getEs.then((es : EventStoreLib.EventStoreType) => {
+function eventDispatcher(streamId : string, ...events : EntityEvent[]) : Promise<void> {
+  return getEs.then((es : EventStoreLib.EventStoreType) => {
+    return new Promise<void>((resolve : Function, reject : (err : Error) => void) => {
       es.getEventStream(streamId, (err : Error, stream : EventStoreLib.Stream) => {
         if (err) {
-          console.log(err);
           resolve();
         } else {
           stream.addEvents(events);
           stream.commit((err : Error, stream : EventStoreLib.Stream) => {
             if (err) {
-              console.log(err);
-              resolve();
+              reject(err);
             } else {
               hydrateEventStream(stream.eventsToDispatch)
-                .then((events : EventStoreLib.Event[]) => {
-                  events.forEach((event : EventStoreLib.Event) => {
-                    eventBus.emit(event.payload);
+                .then((events : EventStoreLib.EventPayload[]) => {
+                  events.forEach((event : EventStoreLib.EventPayload) => {
+                    eventBus.emit(event);
                   });
                   resolve();
                 })
@@ -177,4 +166,4 @@ function eventDispatcher(streamId : string, events : EntityEvent[]) : Promise<vo
   });
 }
 
-export const entityRepository : EntityRepository = new BaseEntityRepository(eventDispatcher, eventStore);
+export const entityRepository : EntityRepository = new DecoratedEntityRepository(eventDispatcher, eventStore);

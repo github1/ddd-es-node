@@ -10,8 +10,14 @@ module.exports = {
     'js',
     'node'
   ],
+  globals: {
+    "ts-jest": {
+      diagnostics: {
+        warnOnly: true
+      }
+    }
+  },
   testRegex: '.*\\.test\\.(js|ts)$',
-  mapCoverage: true,
   coverageDirectory: 'coverage',
   collectCoverageFrom: [
     'src/**/*.{ts,js}',

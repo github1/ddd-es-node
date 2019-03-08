@@ -17,7 +17,7 @@ const composeHandlers = (...handlers : EventHandler[]) : EventHandler => {
 };
 
 export class Entity {
-  protected id : string;
+  public id : string;
   protected applier : EventHandler;
   protected dispatch : VoidEventDispatcher;
 

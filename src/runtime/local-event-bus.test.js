@@ -5,7 +5,7 @@ describe('LocalEventBus', () => {
   let bus;
   beforeEach(() => {
     store = {
-      replayAll: jest.fn()
+      replayAll: jest.fn(() => Promise.resolve())
     };
     bus = new LocalEventBus(store);
   });

@@ -2,6 +2,7 @@ import {
   EntityEvent,
   EventBus,
   EventBusSubscription,
+  EventBusSubscriptionOptions,
   EventStore
 } from '../core';
 import * as events from 'events';
@@ -28,9 +29,13 @@ export class LocalEventBus implements EventBus {
   }
 
   public subscribe(listener : (event : EntityEvent, isReplaying? : boolean) => void,
-                   options? : { [key:string]: string | boolean }) : EventBusSubscription {
-    if (options && options['replay']) {
-      this.eventStore.replayAll(listener);
+                   options : EventBusSubscriptionOptions = {}) : EventBusSubscription {
+    if (options.replay) {
+      this.eventStore
+        .replayAll(listener)
+        .catch((err: Error) => {
+          throw err;
+        });
     }
     const emitterListener : (event : EntityEvent, isReplaying? : boolean) => void = (event : EntityEvent) : void => {
       listener(event, false);
