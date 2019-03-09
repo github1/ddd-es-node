@@ -12,20 +12,21 @@ npm install ddd-es-node --save
 
 Define events.
 
-```javascript
+```typescript
 import { EntityEvent } from "ddd-es-node";
 
 export class OrderCancelledEvent extends EntityEvent {
 }
 ```
 
-Create rich domain entities.
+Create domain entities.
 
-```javascript
+```typescript
 import { Entity } from "ddd-es-node";
 import { OrderCancelledEvent } from "./events";
 
 export class Order extends Entity {
+  private cancelled : boolean;
   constructor(id) {
     super(id, (self, event) => {
       if(event instanceof OrderCancelledEvent) {
@@ -33,7 +34,7 @@ export class Order extends Entity {
       }
     });
   }
-  cancel() {
+  public cancel() {
     if(this.cancelled) {
       throw new Error('Order already cancelled');
     } else {
@@ -45,27 +46,26 @@ export class Order extends Entity {
 
 Load entities and execute commands.
 
-```javascript
+```typescript
 import { entityRepository } from "ddd-es-node";
 import { Order } from "./orders";
 
-export const cancelOrder = (id) => {
+export const cancelOrder = (id) : void => {
   return entityRepository
       .load(Order, id)
-      .then(order => order.cancel());
+      .then((order : Order) => order.cancel());
 };
 ```
 
-Add subscribers.
+Add event subscribers.
 
-```javascript
-import { eventBus } from "ddd-es-node";
+```typescript
+import { eventBus, EntityEvent } from "ddd-es-node";
 import { OrderCancelledEvent } from "./events";
 
-eventBus.subscribe((event) => {
+eventBus.subscribe((event : EntityEvent) => {
   if (event instanceof OrderCancelledEvent) {
     // do something
   }
 }, { replay: true });
 ```
-

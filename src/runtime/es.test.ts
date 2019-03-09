@@ -1,7 +1,7 @@
 import {
   EntityEvent,
   onEvent,
-  VoidEventDispatcher
+  Dispatcher
 } from '../core';
 import { entityRepository } from './';
 
@@ -9,7 +9,7 @@ class EsEvent extends EntityEvent {
 }
 
 class EsTestEntity {
-  public dispatch: VoidEventDispatcher;
+  public dispatch: Dispatcher;
   public lastEvent: EntityEvent;
   constructor(readonly id : string) {
   }

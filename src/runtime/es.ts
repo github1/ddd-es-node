@@ -27,6 +27,7 @@ module EventStoreLib {
     eventsToDispatch : Event[];
   };
   export type EventPayload = {
+    uuid : string;
     streamId : string;
     name : string;
   };
@@ -70,6 +71,7 @@ const hydrateEventStream = (events : EventStoreLib.Event[]): Promise<EventStoreL
             .catch(reject);
         } else {
           resolve({
+            uuid: event.payload.uuid,
             name: event.payload.name,
             streamId: event.streamId || event.aggregateId,
             payload: event.payload
@@ -114,9 +116,9 @@ export class EventStoreLibEventStore implements EventStore {
               reject(err);
             } else {
               hydrateEventStream(events)
-                .then((results : EventStoreLib.Event[]) => {
-                  results.forEach((event : EventStoreLib.Event) => {
-                    handler(<EntityEvent>event.payload, true);
+                .then((results : EventStoreLib.EventPayload[]) => {
+                  results.forEach((event : EventStoreLib.EventPayload) => {
+                    handler(<EntityEvent>event, true);
                   });
                   resolve();
                 })

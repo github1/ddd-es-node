@@ -1,6 +1,6 @@
 import {
   EntityEvent,
-  VoidEventDispatcher
+  Dispatcher
 } from '../event';
 
 export type EventHandler = (entity : Entity, event : EntityEvent) => void;
@@ -19,7 +19,7 @@ const composeHandlers = (...handlers : EventHandler[]) : EventHandler => {
 export class Entity {
   public id : string;
   protected applier : EventHandler;
-  protected dispatch : VoidEventDispatcher;
+  protected dispatch : Dispatcher;
 
   constructor(id : string,
               ...appliers : EventHandler[]) {
@@ -27,7 +27,7 @@ export class Entity {
     this.applier = composeHandlers(...appliers);
   }
 
-  public init(dispatch : VoidEventDispatcher) : void {
+  public init(dispatch : Dispatcher) : void {
     this.dispatch = dispatch;
   }
 
