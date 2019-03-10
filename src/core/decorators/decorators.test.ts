@@ -4,6 +4,7 @@ import {
   onEvent,
   subscribe,
 } from './';
+import {Entity} from '../entity';
 import {
   EntityEvent,
   EventDispatcher
@@ -60,6 +61,13 @@ class TestEventSubscriber {
   }
 }
 
+class ExtendsFromEntity extends Entity {
+  constructor(id) {
+    super(id, (self : ExtendsFromEntity, event : EntityEvent) => {
+    });
+  }
+}
+
 describe('decorators', () => {
   let repo : DecoratedEntityRepository;
   let dispatcher : EventDispatcher;
@@ -89,10 +97,16 @@ describe('decorators', () => {
         expect(entity.lastEventReceivedFromSuperclass).toBeDefined();
       });
   });
+  it('loads types which extend Entity directly', () => {
+    return repo.load(ExtendsFromEntity, '123')
+      .then((entity: ExtendsFromEntity) => {
+        expect(entity).toBeDefined();
+      });
+  });
   it('registers event subscribers', () => {
     expect.assertions(3);
     expect(TestEventSubscriber.lastEventReceivedFromSubscriber.uuid).toBe(anEvent.uuid);
-    const anotherEvent: EntityEvent = JSON.parse(JSON.stringify(anEvent));
+    const anotherEvent : EntityEvent = JSON.parse(JSON.stringify(anEvent));
     anotherEvent.uuid = 'd31f6c88-415a-11e9-b210-d663bd873d93';
     return dispatcher('123', anotherEvent)
       .then(() => {

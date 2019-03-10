@@ -93,22 +93,26 @@ export class DecoratedEntityRepository implements EntityRepository {
   }
 
   public load(construct : { new(arg : string) }, id : string) : Promise<any> {
-    const onEventMetadata : OnEventMetadata = Reflect.getMetadata(METADATA_ON_EVENT, index[construct.name]);
-    const appliers : ((target : any, event : EntityEvent) => void)[] = [];
     const delegate : any = new construct(id);
-    appliers.push(delegate[onEventMetadata.methodName]);
-    for (const superclass of onEventMetadata.superclasses) {
-      const onEventMetadata : OnEventMetadata = Reflect.getMetadata(METADATA_ON_EVENT, index[superclass.name]);
-      if (onEventMetadata) {
-        appliers.push(superclass.prototype[onEventMetadata.methodName]);
+    if (index[construct.name]) {
+      const onEventMetadata : OnEventMetadata = Reflect.getMetadata(METADATA_ON_EVENT, index[construct.name]);
+      const appliers : ((target : any, event : EntityEvent) => void)[] = [];
+      appliers.push(delegate[onEventMetadata.methodName]);
+      for (const superclass of onEventMetadata.superclasses) {
+        const onEventMetadata : OnEventMetadata = Reflect.getMetadata(METADATA_ON_EVENT, index[superclass.name]);
+        if (onEventMetadata) {
+          appliers.push(superclass.prototype[onEventMetadata.methodName]);
+        }
       }
+      const wrapper : WrapperEntity = new WrapperEntity(id, delegate, appliers);
+      return loadWithInstance(id, wrapper, this.eventDispatcher, this.eventStore)
+        .then(() => {
+          delegate.dispatch = wrapper['dispatch'];
+          return delegate;
+        });
+    } else {
+      return loadWithInstance(id, delegate, this.eventDispatcher, this.eventStore);
     }
-    const wrapper : WrapperEntity = new WrapperEntity(id, delegate, appliers);
-    return loadWithInstance(id, wrapper, this.eventDispatcher, this.eventStore)
-      .then(() => {
-        delegate.dispatch = wrapper['dispatch'];
-        return delegate;
-      });
   }
 }
 
