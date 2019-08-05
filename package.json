@@ -1,7 +1,7 @@
 {
   "name": "ddd-es-node",
   "public": true,
-  "version": "0.0.0",
+  "version": "0.3.5",
   "description": "DDD and Event Sourcing primitives for nodejs",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -47,5 +47,10 @@
   "license": "MIT",
   "publishConfig": {
     "access": "public"
+  },
+  "author": "John Collier <john.collier4@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:github1/ddd-es-node.git"
   }
 }
