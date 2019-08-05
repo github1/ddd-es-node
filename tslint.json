@@ -1,0 +1,51 @@
+{
+  "extends": [
+    "tslint-microsoft-contrib/recommended"
+  ],
+  "linterOptions": {
+    "exclude": [
+      "src/**/*test.ts"
+    ]
+  },
+  "rules": {
+    "align": false,
+    "completed-docs": false,
+    "export-name": false,
+    "interface-name": false,
+    "linebreak-style": [
+      true,
+      "LF"
+    ],
+    "max-classes-per-file": false,
+    "max-func-body-length": false,
+    "missing-jsdoc": false,
+    "mocha-no-side-effect-code": false,
+    "newline-before-return": false,
+    "no-console": false,
+    "no-constant-condition": false,
+    "no-empty-interface": false,
+    "no-http-string": false,
+    "no-increment-decrement": false,
+    "no-parameter-properties": false,
+    "no-relative-imports": false,
+    "no-require-imports": false,
+    "no-shadowed-variable": false,
+    "no-stateless-class": false,
+    "no-string-literal": false,
+    "no-suspicious-comment": false,
+    "no-void-expression": false,
+    "one-line": false,
+    "ordered-imports": false,
+    "possible-timing-attack": false,
+    "promise-function-async": false,
+    "strict-boolean-expressions": false,
+    "typedef": [
+      true,
+      "parameter",
+      "arrow-parameter",
+      "property-declaration",
+      "member-variable-declaration"
+    ],
+    "whitespace": false
+  }
+}
