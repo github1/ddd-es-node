@@ -69,3 +69,6 @@ eventBus.subscribe((event : EntityEvent) => {
   }
 }, { replay: true });
 ```
+
+## License
+[License]

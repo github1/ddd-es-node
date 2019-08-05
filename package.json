@@ -1,7 +1,8 @@
 {
   "name": "ddd-es-node",
-  "version": "0.0.26",
-  "description": "ddd-es-node",
+  "public": true,
+  "version": "0.0.0",
+  "description": "DDD and Event Sourcing primitives for nodejs",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "engineStrict": true,
@@ -10,19 +11,18 @@
   },
   "scripts": {
     "clean": "rimraf coverage dist tmp",
-    "build": "tsc -p tsconfig.release.json",
-    "watch": "tsc -w -p tsconfig.release.json",
-    "lint": "tslint -t stylish --type-check --exclude '**/*.js' --project 'tsconfig.json'",
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -w -p tsconfig.json",
+    "lint": "tslint -t stylish --exclude '**/*.js' --project 'tsconfig.json'",
     "pretest": "npm run lint && eslint .",
     "test": "npm run test-only",
     "test-only": "jest --coverage",
     "test:watch": "jest --watch",
-    "prepublishOnly": "npm run clean && npm run build"
+    "prepublishOnly": "npm run clean && npm run build && ./prepare.sh"
   },
   "dependencies": {
     "eventstore": "^1.12.3",
     "reflect-metadata": "^0.1.13",
-    "tslib": "~1.7.1",
     "uuid": "^3.1.0",
     "walk": "^2.3.9"
   },
@@ -30,18 +30,21 @@
     "@types/jest": "^24.0.9",
     "@types/node": "^8.0.17",
     "@types/uuid": "^3.4.0",
-    "babel-jest": "^20.0.3",
+    "babel-jest": "^22.4.0",
     "babel-plugin-transform-async-to-generator": "^6.24.1",
     "babel-preset-node6": "^11.0.0",
-    "eslint": "^4.4.1",
+    "eslint": "^5.10.0",
     "eslint-plugin-jest": "^20.0.3",
-    "jest": "23.6.0",
-    "rimraf": "~2.6.1",
+    "jest": "^22.4.0",
+    "rimraf": "~2.6.0",
     "ts-jest": "^23.10.5",
     "tslint": "^5.12.1",
     "tslint-microsoft-contrib": "^6.0.0",
     "tsutils": "~2.7.1",
-    "typescript": "3.3.3"
+    "typescript": "^3.0.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
 }

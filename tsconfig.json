@@ -10,7 +10,7 @@
     "sourceMap": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
+    "noImplicitReturns": false,
     "noUnusedLocals": true,
     "noUnusedParameters": false,
     "noImplicitAny": false,
@@ -18,9 +18,15 @@
     "strictNullChecks": false,
     "declaration": true,
     "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "rootDir": "./src",
+    "outDir": "dist",
+    "removeComments": true
   },
   "include": [
     "src/**/*"
+  ],
+  "exclude": [
+    "src/**/*.test.ts"
   ]
 }

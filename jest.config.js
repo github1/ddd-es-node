@@ -2,8 +2,8 @@ module.exports = {
   verbose: true,
   testEnvironment: 'node',
   transform: {
-    "^.+\\.js$": '<rootDir>/node_modules/babel-jest',
-    "^.+\\.ts$": '<rootDir>/node_modules/ts-jest'
+    "^.+\\.js$": 'babel-jest',
+    "^.+\\.ts$": 'ts-jest'
   },
   moduleFileExtensions: [
     'ts',
