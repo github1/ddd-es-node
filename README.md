@@ -1,6 +1,8 @@
 # ddd-es-node
 
-DDD and Event Sourcing primitives for nodejs
+[description]
+
+[badges]
 
 ## Install
 
@@ -71,4 +73,4 @@ eventBus.subscribe((event : EntityEvent) => {
 ```
 
 ## License
-[License]
+[license]
