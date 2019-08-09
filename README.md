@@ -1,8 +1,10 @@
 # ddd-es-node
 
-[description]
+DDD and Event Sourcing primitives for nodejs
 
-[badges]
+[![build status](https://img.shields.io/travis/github1/ddd-es-node/master.svg?style=flat-square)](https://travis-ci.org/github1/ddd-es-node)
+[![npm version](https://img.shields.io/npm/v/ddd-es-node.svg?style=flat-square)](https://www.npmjs.com/package/ddd-es-node)
+[![npm downloads](https://img.shields.io/npm/dm/ddd-es-node.svg?style=flat-square)](https://www.npmjs.com/package/ddd-es-node)
 
 ## Install
 
@@ -73,4 +75,4 @@ eventBus.subscribe((event : EntityEvent) => {
 ```
 
 ## License
-[license]
+[MIT](LICENSE.md)
