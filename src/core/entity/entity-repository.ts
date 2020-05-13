@@ -68,6 +68,7 @@ export const loadWithInstance = <T>(
         reject(err);
       });
   }), () => {
+    chainComplete = true;
     if (eventsToDispatch.length === 0) {
       return Promise.resolve();
     } else {
