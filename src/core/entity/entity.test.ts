@@ -19,7 +19,7 @@ class TestEvent extends EntityEvent {
 class TestEntity extends Entity {
   public lastEventReceived : EntityEvent;
 
-  constructor(id : string) {
+  constructor(id : string, public anotherArg : string) {
     super(id, (self : TestEntity, event : EntityEvent) => {
       self.lastEventReceived = event;
     });
@@ -87,6 +87,11 @@ describe('BaseEntityRepository', () => {
         }).then((err) => {
           expect(err.message).toEqual('someError');
         });
+      });
+    });
+    it('can be loaded with multiple arguments', () => {
+      return repo.load(TestEntity, '123', 'anotherVal').then((entity : TestEntity) => {
+        expect(entity.anotherArg).toBe('anotherVal');
       });
     });
     describe('when events are stored for the entity', () => {

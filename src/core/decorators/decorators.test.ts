@@ -34,7 +34,7 @@ class TestEntity extends TestEntitySuperClass {
 
   public lastEventReceivedFromSubclass : EntityEvent;
 
-  constructor(id : string) {
+  constructor(id : string, public anotherArg : string) {
     super(id)
   }
 
@@ -95,6 +95,14 @@ describe('decorators', () => {
         expect(entity.id).toBe('123');
         expect(entity.lastEventReceivedFromSubclass).toBeDefined();
         expect(entity.lastEventReceivedFromSuperclass).toBeDefined();
+      });
+  });
+  it('loads decorated types with additional constructor args', () => {
+    expect.assertions(1);
+    return repo
+      .load(TestEntity, '123', 'someVal')
+      .then((entity : TestEntity) => {
+        expect(entity.anotherArg).toBe('someVal');
       });
   });
   it('loads types which extend Entity directly', () => {

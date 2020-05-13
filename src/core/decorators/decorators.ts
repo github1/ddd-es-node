@@ -92,8 +92,8 @@ export class DecoratedEntityRepository implements EntityRepository {
               private readonly eventStore : EventStore) {
   }
 
-  public load(construct : { new(arg : string) }, id : string) : Promise<any> {
-    const delegate : any = new construct(id);
+  public load(construct : { new(...arg: any[]) }, id : string, ...additionalConstArgs : any[]) : Promise<any> {
+    const delegate : any = new construct(id, ...additionalConstArgs);
     if (index[construct.name]) {
       const onEventMetadata : OnEventMetadata = Reflect.getMetadata(METADATA_ON_EVENT, index[construct.name]);
       const appliers : ((target : any, event : EntityEvent) => void)[] = [];

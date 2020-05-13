@@ -32,7 +32,7 @@ export class ChainInterceptorPromise<T> extends Promise<T> {
 // tslint:enable
 
 export interface EntityRepository {
-  load<T>(construct : { new(arg : string) }, id : string) : Promise<T>;
+  load<T>(construct : { new(...arg : any[]) }, id : string, ...additional : any[]) : Promise<T>;
 }
 
 export const loadWithInstance = <T>(
@@ -78,10 +78,10 @@ export class BaseEntityRepository implements EntityRepository {
               private readonly eventStore : EventStore) {
   }
 
-  public load<T>(construct : { new(arg : string) }, id : string) : Promise<T> {
+  public load<T>(construct : { new(...arg : any[]) }, id : string, ...additional : any[]) : Promise<T> {
     return loadWithInstance(
       id,
-      <Entity>new construct(id),
+      <Entity>new construct(id, ...additional),
       this.eventDispatcher,
       this.eventStore);
   }
