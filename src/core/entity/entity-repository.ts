@@ -41,12 +41,20 @@ export const loadWithInstance = <T>(
   eventDispatcher : EventDispatcher,
   eventStore : EventStore) : Promise<T> => {
   const eventsToDispatch : EntityEvent[] = [];
+  let chainComplete = false;
   return new ChainInterceptorPromise(new Promise((resolve : Function, reject : (error : Error) => void) => {
     const streamId : string = id;
     entity.init((event : EntityEvent) : void => {
       event.streamId = streamId;
-      eventsToDispatch.push(event);
       entity.apply(event);
+      if (chainComplete) {
+        eventDispatcher(id, event)
+          .catch(err => {
+            throw err
+          });
+      } else {
+        eventsToDispatch.push(event);
+      }
     });
     eventStore.replay(
       id,
