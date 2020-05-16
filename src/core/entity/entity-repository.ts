@@ -49,7 +49,7 @@ export const loadWithInstance = <T>(
       entity.apply(event);
       if (chainComplete) {
         eventDispatcher(id, event)
-          .catch(err => {
+          .catch((err: Error) => {
             throw err
           });
       } else {
