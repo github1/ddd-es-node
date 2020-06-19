@@ -10,6 +10,7 @@ import {
 import {
   clearMemoryEvents,
   createMemoryEventDispatcher,
+  memoryEvents,
   memoryEventStore
 } from '../../runtime/in-memory';
 
@@ -22,11 +23,29 @@ class TestEntity extends Entity {
   constructor(id : string, public anotherArg : string) {
     super(id, (self : TestEntity, event : EntityEvent) => {
       self.lastEventReceived = event;
+      if (self.id === 'errorInEventHandler') {
+        throw new Error(self.id);
+      }
     });
+    if (id === 'errorInConstructor') {
+      throw new Error(id);
+    }
   }
 
   public doSomething() {
     this.dispatch(new TestEvent());
+  }
+
+  public doSomethingReturnsEvent() {
+    return new TestEvent();
+  }
+
+  public doSomethingReturnsEvents() {
+    return [new TestEvent(), {
+      uuid: '12345eventLike',
+      typeNameMetaData: 'TestEvent',
+      name: 'TestEvent'
+    }];
   }
 }
 
@@ -62,37 +81,51 @@ describe('BaseEntityRepository', () => {
     afterEach(() => {
       clearMemoryEvents();
     });
-    it('dispatches the event after an operation is executed', () => {
-      return repo.load(TestEntity, '123').then((entity : TestEntity) => {
-        entity.doSomething();
-        return 'loaded_entity';
-      }).then((value) => {
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve('arbitrary_async_call_' + value);
-          }, 1);
-        });
-      }).then((value) => {
-        return 'events_dispatched_from_' + value;
-      }).then((value) => {
-        expect(value).toEqual('events_dispatched_from_arbitrary_async_call_loaded_entity');
-      });
+    it('dispatches the event after an operation is executed', async () => {
+      const entity = await repo.load(TestEntity, '123');
+      entity.doSomething();
+      await delay(20);
+      expect(memoryEvents.length).toBe(1);
+      expect(memoryEvents[0]).toBeInstanceOf(TestEvent);
+    });
+    it('dispatches the an event returned from a entity function', async () => {
+      const entity = await repo.load(TestEntity, '123');
+      entity.doSomethingReturnsEvent();
+      await delay(20);
+      expect(memoryEvents.length).toBe(1);
+      expect(memoryEvents[0]).toBeInstanceOf(TestEvent);
+    });
+    it('dispatches the an array of events returned from a entity function', async () => {
+      const entity = await repo.load(TestEntity, '123');
+      entity.doSomethingReturnsEvents();
+      await delay(20);
+      expect(memoryEvents.length).toBe(2);
+      expect(memoryEvents[0]).toBeInstanceOf(TestEvent);
+      expect(memoryEvents[1].typeNameMetaData).toBe('TestEvent');
     });
     describe('when an error is thrown', () => {
-      it('it can be captured with a catch on the promise', () => {
-        return repo.load(TestEntity, '123').then(() => {
-          throw new Error('someError');
-        }).catch((err) => {
-          return err;
-        }).then((err) => {
-          expect(err.message).toEqual('someError');
-        });
+      it('receives errors from the constructor', async () => {
+        expect.assertions(1);
+        try {
+          await repo.load(TestEntity, 'errorInConstructor');
+        } catch (err) {
+          expect(err.message).toBe('errorInConstructor');
+        }
+      });
+      it('receives errors from the constructor event handler', async () => {
+        expect.assertions(1);
+        try {
+          const entity = await repo.load(TestEntity, 'errorInEventHandler');
+          entity.doSomething();
+          await repo.load(TestEntity, 'errorInEventHandler');
+        } catch (err) {
+          expect(err.message).toBe('errorInEventHandler');
+        }
       });
     });
-    it('can be loaded with multiple arguments', () => {
-      return repo.load(TestEntity, '123', 'anotherVal').then((entity : TestEntity) => {
-        expect(entity.anotherArg).toBe('anotherVal');
-      });
+    it('can be loaded with multiple arguments', async () => {
+      const entity = await repo.load(TestEntity, '123', 'anotherVal');
+      expect(entity.anotherArg).toBe('anotherVal');
     });
     describe('when events are stored for the entity', () => {
       beforeEach(() => {
@@ -104,20 +137,20 @@ describe('BaseEntityRepository', () => {
           streamId: '123'
         });
       });
-      it('applies the events to the entity', () => {
-        return repo.load(TestEntity, '123').then((entity : TestEntity) => {
-          expect(entity.lastEventReceived.uuid).toBe('3dff623a-7373-11e8-adc0-fa7ae01bbebc');
-        });
+      it('applies the events to the entity', async () => {
+        const entity = await repo.load(TestEntity, '123');
+        expect(entity.lastEventReceived.uuid).toBe('3dff623a-7373-11e8-adc0-fa7ae01bbebc');
       });
       describe('when the entity is a subclass', () => {
-        it('applies the events the parent handler and child handler', () => {
-          repo.load(TestEntitySubclass, '123').then((entity : TestEntitySubclass) => {
-            expect(entity.lastEventReceivedFromSuperclass.uuid).toBe('3dff623a-7373-11e8-adc0-fa7ae01bbebc');
-            expect(entity.lastEventReceivedFromSubclass.uuid).toBe('3dff623a-7373-11e8-adc0-fa7ae01bbebc');
-          });
+        it('applies the events the parent handler and child handler', async () => {
+          const entity = await repo.load(TestEntitySubclass, '123');
+          expect(entity.lastEventReceivedFromSuperclass.uuid).toBe('3dff623a-7373-11e8-adc0-fa7ae01bbebc');
+          expect(entity.lastEventReceivedFromSubclass.uuid).toBe('3dff623a-7373-11e8-adc0-fa7ae01bbebc');
         });
       });
     });
   });
 
 });
+
+const delay = ms => new Promise(resolve => setTimeout(() => resolve(), ms));

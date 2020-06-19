@@ -51,8 +51,10 @@ export class Order extends Entity {
 Load entities and execute commands.
 
 ```typescript
-import { entityRepository } from "ddd-es-node";
+import { defaultEsContext } from "ddd-es-node";
 import { Order } from "./orders";
+
+const { entityRepository } = defaultEsContext;
 
 export const cancelOrder = (id) : void => {
   return entityRepository
@@ -64,8 +66,10 @@ export const cancelOrder = (id) : void => {
 Add event subscribers.
 
 ```typescript
-import { eventBus, EntityEvent } from "ddd-es-node";
+import { defaultEsContext, EntityEvent } from "ddd-es-node";
 import { OrderCancelledEvent } from "./events";
+
+const { eventBus } = defaultEsContext;
 
 eventBus.subscribe((event : EntityEvent) => {
   if (event instanceof OrderCancelledEvent) {

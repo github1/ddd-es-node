@@ -17,13 +17,11 @@ const composeHandlers = (...handlers : EventHandler[]) : EventHandler => {
 };
 
 export class Entity {
-  public id : string;
   protected applier : EventHandler;
   protected dispatch : Dispatcher;
 
-  constructor(id : string,
+  constructor(public readonly id : string,
               ...appliers : EventHandler[]) {
-    this.id = id;
     this.applier = composeHandlers(...appliers);
   }
 

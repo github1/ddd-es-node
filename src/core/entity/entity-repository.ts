@@ -7,10 +7,9 @@ import {
 
 // tslint:disable
 export class ChainInterceptorPromise<T> extends Promise<T> {
-  private readonly promise : Promise<T>;
-  private readonly afterChain : Function;
 
-  constructor(promise : Promise<T>, afterChain? : Function) {
+  constructor(private readonly promise : Promise<T>,
+              private readonly afterChain? : Function) {
     super((resolve : Function) => {
       resolve();
     });
@@ -20,7 +19,9 @@ export class ChainInterceptorPromise<T> extends Promise<T> {
 
   public then(a : any) : ChainInterceptorPromise<T> {
     return new ChainInterceptorPromise<T>(this.promise.then(a).then((a) => {
-      return this.afterChain(a).then(() => Promise.resolve(a));
+      return this.afterChain(a).then(() => {
+        return a;
+      });
     }), this.afterChain);
   }
 
@@ -32,7 +33,7 @@ export class ChainInterceptorPromise<T> extends Promise<T> {
 // tslint:enable
 
 export interface EntityRepository {
-  load<T>(construct : { new(...arg : any[]) }, id : string, ...additional : any[]) : Promise<T>;
+  load<T>(construct : { new(...arg : any[]) : T }, id : string, ...additional : any[]) : Promise<T>;
 }
 
 export const loadWithInstance = <T>(
@@ -49,7 +50,7 @@ export const loadWithInstance = <T>(
       entity.apply(event);
       if (chainComplete) {
         eventDispatcher(id, event)
-          .catch((err: Error) => {
+          .catch((err : Error) => {
             throw err
           });
       } else {
@@ -62,7 +63,25 @@ export const loadWithInstance = <T>(
         entity.apply(event);
       })
       .then(() => {
-        resolve(entity);
+        let handler = {
+          get(target, propKey) {
+            const origMethod = target[propKey];
+            if (!/^(dispatch|get.*)$/i.test(propKey) && typeof origMethod === 'function') {
+              return function (...args) {
+                const result = origMethod.apply(this, args);
+                const asArray = result ? (Array.isArray(result) ? result : [result]) : [];
+                for (const item of asArray) {
+                  if (item instanceof EntityEvent || EntityEvent.possibleEntityEvent(item)) {
+                    eventsToDispatch.push(item);
+                  }
+                }
+                return result;
+              };
+            }
+            return origMethod;
+          }
+        };
+        resolve(new Proxy(entity, handler));
       })
       .catch((err : Error) => {
         reject(err);

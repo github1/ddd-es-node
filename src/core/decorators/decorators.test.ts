@@ -87,39 +87,30 @@ describe('decorators', () => {
     TestEventSubscriber.reset();
     clearMemoryEvents();
   });
-  it('loads decorated types', () => {
+  it('loads decorated types', async () => {
     expect.assertions(3);
-    return repo
-      .load(TestEntity, '123')
-      .then((entity : TestEntity) => {
-        expect(entity.id).toBe('123');
-        expect(entity.lastEventReceivedFromSubclass).toBeDefined();
-        expect(entity.lastEventReceivedFromSuperclass).toBeDefined();
-      });
+    const entity = await repo.load(TestEntity, '123');
+    expect(entity.id).toBe('123');
+    expect(entity.lastEventReceivedFromSubclass).toBeDefined();
+    expect(entity.lastEventReceivedFromSuperclass).toBeDefined();
   });
-  it('loads decorated types with additional constructor args', () => {
+  it('loads decorated types with additional constructor args', async () => {
     expect.assertions(1);
-    return repo
-      .load(TestEntity, '123', 'someVal')
-      .then((entity : TestEntity) => {
-        expect(entity.anotherArg).toBe('someVal');
-      });
+    const entity = await repo.load(TestEntity, '123', 'someVal');
+    expect(entity.anotherArg).toBe('someVal');
   });
-  it('loads types which extend Entity directly', () => {
-    return repo.load(ExtendsFromEntity, '123')
-      .then((entity: ExtendsFromEntity) => {
-        expect(entity).toBeDefined();
-      });
+  it('loads types which extend Entity directly', async () => {
+    const entity = await repo.load(ExtendsFromEntity, '123');
+    expect(entity).toBeDefined();
+    expect(entity).toBeInstanceOf(ExtendsFromEntity);
   });
-  it('registers event subscribers', () => {
+  it('registers event subscribers', async () => {
     expect.assertions(3);
     expect(TestEventSubscriber.lastEventReceivedFromSubscriber.uuid).toBe(anEvent.uuid);
     const anotherEvent : EntityEvent = JSON.parse(JSON.stringify(anEvent));
     anotherEvent.uuid = 'd31f6c88-415a-11e9-b210-d663bd873d93';
-    return dispatcher('123', anotherEvent)
-      .then(() => {
-        expect(TestEventSubscriber.eventReceivedCount).toBe(2);
-        expect(TestEventSubscriber.lastEventReceivedFromSubscriber.uuid).toBe(anotherEvent.uuid);
-      });
+    await dispatcher('123', anotherEvent);
+    expect(TestEventSubscriber.eventReceivedCount).toBe(2);
+    expect(TestEventSubscriber.lastEventReceivedFromSubscriber.uuid).toBe(anotherEvent.uuid);
   });
 });

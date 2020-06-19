@@ -1,7 +1,7 @@
-import { EntityEvent } from './entity-event';
+import {EntityEvent} from './entity-event';
 
 export interface EventBusSubscriptionOptions {
-  replay?: boolean;
+  replay? : boolean;
 }
 
 export interface EventBusSubscription {
@@ -11,5 +11,6 @@ export interface EventBusSubscription {
 export interface EventBus {
   subscribe(listener : (event : EntityEvent, isReplaying? : boolean) => void,
             options? : EventBusSubscriptionOptions) : EventBusSubscription;
+
   emit(event : {}) : void;
 }
