@@ -64,14 +64,14 @@ export const loadWithInstance = <T>(
       })
       .then(() => {
         let handler = {
-          get(target, propKey) {
+          get(target: any, propKey: string) {
             const origMethod = target[propKey];
             if (!/^(dispatch|get.*)$/i.test(propKey) && typeof origMethod === 'function') {
-              return function (...args) {
+              return function (...args: any[]) {
                 const result = origMethod.apply(this, args);
                 const asArray = result ? (Array.isArray(result) ? result : [result]) : [];
                 for (const item of asArray) {
-                  if (item instanceof EntityEvent || EntityEvent.possibleEntityEvent(item)) {
+                  if (item instanceof EntityEvent || EntityEvent.IS_LIKE_EVENT(item)) {
                     eventsToDispatch.push(item);
                   }
                 }

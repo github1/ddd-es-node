@@ -2,7 +2,6 @@ import {
   DecoratedEntityRepository,
   DecoratedEventBus,
   EntityEvent,
-  EventsByStream,
   EntityEventUser,
   EntityRepository,
   EventBus,
@@ -10,6 +9,7 @@ import {
   eventDispatcherWithModifiers,
   EventModifier,
   EventModifiers,
+  EventsByStream,
   EventStore,
   EventStoreSeeded,
   EventStoreWriter
@@ -65,12 +65,12 @@ es.init((err : Error) => {
   }
 });
 
-const hydrateEventStream = (events : EventStoreLib.Event[]): Promise<EventStoreLib.EventPayload[]> => {
+const hydrateEventStream = (events : EventStoreLib.Event[]) : Promise<EventStoreLib.EventPayload[]> => {
   return Promise.all((events || [])
     .map((event : EventStoreLib.Event) => {
       return new Promise<EventStoreLib.EventPayload>((resolve : Function, reject : (err : Error) => void) => {
         if (!event.payload)
-        console.log(event, event.payload);
+          console.log(event, event.payload);
         event.payload.streamId = event.streamId || event.aggregateId;
         if (esConfig.hasOwnProperty('type')) {
           // ensure types are restored after deserialization
@@ -91,30 +91,31 @@ const hydrateEventStream = (events : EventStoreLib.Event[]): Promise<EventStoreL
     }));
 };
 
-interface EsContextClosed {
+export interface EsContextClosed {
   eventBus : EventBus;
   eventStore : EventStore;
   eventDispatcher : EventDispatcher;
   entityRepository : EntityRepository;
 }
 
-class EsContext implements EsContextClosed {
+export class EsContext implements EsContextClosed {
   public readonly eventBus : EventBus;
   public readonly eventDispatcher : EventDispatcher;
   public readonly entityRepository : EntityRepository;
+
   constructor(public readonly eventStore : EventStore,
               private readonly eventStoreWriter? : EventStoreWriter,
               private readonly modifiers : EventModifiers = {},
               seededEvents : EventsByStream = {}) {
     this.eventStore = Object.keys(seededEvents).length === 0 ? eventStore : new EventStoreSeeded(eventStore, seededEvents);
-    this.eventStoreWriter = this.eventStoreWriter || this.eventStore as any as EventStoreWriter;
+    this.eventStoreWriter = this.eventStoreWriter || <EventStoreWriter>(<any>this.eventStore);
     this.eventBus = new DecoratedEventBus(new LocalEventBus(this.eventStore));
     this.eventDispatcher = eventDispatcherWithModifiers(
       createEventDispatcher(this.eventStoreWriter, this.eventBus), this.modifiers);
     this.entityRepository = new DecoratedEntityRepository(this.eventDispatcher, this.eventStore);
   }
 
-  public withModifier(id: string, modifier: EventModifier): EsContext {
+  public withModifier(id : string, modifier : EventModifier) : EsContext {
     return new EsContext(this.eventStore, this.eventStoreWriter, {
       ...(this.modifiers),
       [id]: modifier
@@ -123,15 +124,15 @@ class EsContext implements EsContextClosed {
 
   public withUser(user : EntityEventUser) : EsContext {
     return this
-      .withModifier('user', event => event.user = user)
+      .withModifier('user', (event : EntityEvent) => event.user = user)
   }
 
   public atTime(timestamp : number) : EsContext {
     return this
-      .withModifier('timestamp', event => event.timestamp = timestamp);
+      .withModifier('timestamp', (event : EntityEvent) => event.timestamp = timestamp);
   }
 
-  public withEvents(eventsByStream: EventsByStream): EsContext {
+  public withEvents(eventsByStream : EventsByStream) : EsContext {
     return new EsContext(this.eventStore, this.eventStoreWriter, {}, eventsByStream);
   }
 
@@ -161,7 +162,8 @@ class EventStoreLibEventStore implements EventStore, EventStoreWriter {
   public replayAll(handler : (event : EntityEvent, isReplaying? : boolean) => void) : Promise<void> {
     return getEs
       .then((es : EventStoreLib.EventStoreType) => {
-        return new Promise((resolve : () => void, reject : (err : Error) => void) => {
+        // tslint:disable-next-line:typedef
+        return new Promise((resolve, reject) => {
           es.getEvents(0, (err : Error, events : EventStoreLib.Event[]) => {
             if (err) {
               reject(err);
@@ -182,21 +184,22 @@ class EventStoreLibEventStore implements EventStore, EventStoreWriter {
     return hydrateEventStream(events)
       .then((results : EventStoreLib.EventPayload[]) => {
         for (let i = 0, il = results.length; i < il; i++) {
-          const entityEvent: EntityEvent = results[i] as EntityEvent;
+          const entityEvent : EntityEvent = <EntityEvent>results[i];
           handler(entityEvent, true);
         }
       });
   }
 
   public write(...events : EntityEvent[]) : Promise<EntityEvent[]> {
-    const groupedByStreamId = events.reduce((groupedByStreamId, event) => {
+    const groupedByStreamId = events.reduce((groupedByStreamId : any, event : EntityEvent) => {
       groupedByStreamId[event.streamId] = groupedByStreamId[event.streamId] || [];
       groupedByStreamId[event.streamId].push(event);
       return groupedByStreamId;
     }, {});
     return Promise.all(Object.keys(groupedByStreamId)
-      .map((streamId) => {
+      .map((streamId : string) => {
         const events = groupedByStreamId[streamId];
+        // tslint:disable-next-line:typedef
         return new Promise((resolve, reject) => {
           es.getEventStream(streamId, (err : Error, stream : EventStoreLib.Stream) => {
             if (err) {
@@ -214,18 +217,19 @@ class EventStoreLibEventStore implements EventStore, EventStoreWriter {
           });
         });
       }))
-      .then((events: EntityEvent[][]) => {
+      .then((events : EntityEvent[][]) => {
         return [].concat(...events);
       });
   }
 }
 
-function createEventDispatcher(eventStoreWriter: EventStoreWriter, eventBus: EventBus): EventDispatcher {
+function createEventDispatcher(eventStoreWriter : EventStoreWriter, eventBus : EventBus) : EventDispatcher {
   return async (streamId : string, ...events : EntityEvent[]) : Promise<void> => {
-    const written: EventStoreLib.Event[] = (await eventStoreWriter.write(...events.map(event => {
+    const written : EventStoreLib.Event[] = <any> (await eventStoreWriter.write(...events
+      .map((event : EntityEvent) => {
       event.streamId = streamId;
       return event;
-    }))) as any;
+    })));
     const hydratedEvents = await hydrateEventStream(written);
     for (const hydratedEvent of hydratedEvents) {
       eventBus.emit(hydratedEvent);

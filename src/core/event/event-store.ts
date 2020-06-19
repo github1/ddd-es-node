@@ -16,12 +16,12 @@ export interface EventStoreWriter {
 export class EventStoreSeeded implements EventStore {
   constructor(private eventStore : EventStore, private seededEvents : EventsByStream = {}) {
     Object.keys(seededEvents)
-      .forEach(streamId => {
-        (seededEvents[streamId] || []).sort((a, b) => a.timestamp - b.timestamp);
+      .forEach((streamId : string) => {
+        (seededEvents[streamId] || []).sort((a : EntityEvent, b : EntityEvent) => a.timestamp - b.timestamp);
       });
   }
 
-  private handlerWrapper(seededEventsArr: EntityEvent[], event : EntityEvent, isReplaying : boolean, handler : (event : EntityEvent, isReplaying? : boolean) => void) {
+  private handlerWrapper(seededEventsArr : EntityEvent[], event : EntityEvent, isReplaying : boolean, handler : (event : EntityEvent, isReplaying? : boolean) => void) {
     while (seededEventsArr && seededEventsArr.length > 0
     && event.timestamp >= seededEventsArr[0].timestamp) {
       handler(seededEventsArr.shift(), true);
@@ -40,7 +40,7 @@ export class EventStoreSeeded implements EventStore {
   }
 
   public async replayAll(handler : (event : EntityEvent, isReplaying? : boolean) => void) : Promise<void> {
-    const allEvents = Object.keys(this.seededEvents).reduce((all, streamId) => {
+    const allEvents = Object.keys(this.seededEvents).reduce((all : EntityEvent[], streamId : string) => {
       all.push(...(this.seededEvents[streamId].slice()));
       return all;
     }, []);

@@ -13,7 +13,7 @@ export class EntityEvent {
   public timestamp : number;
   public user? : EntityEventUser;
 
-  public static possibleEntityEvent(obj : any) {
+  public static IS_LIKE_EVENT(obj : any) {
     return obj && obj.hasOwnProperty('uuid')
       && obj.hasOwnProperty('typeNameMetaData')
       && obj.hasOwnProperty('name');
