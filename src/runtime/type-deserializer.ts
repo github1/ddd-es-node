@@ -3,8 +3,9 @@
 import * as walk from 'walk';
 import * as fs from 'fs';
 import * as path from 'path';
+import {SERIALIZABLE_TYPES} from "../core/decorators";
 
-const types : {[key:string]:any} = {};
+let types : {[key:string]:any} = {};
 const loaded : {[key:string]:any} = {};
 
 let packageJson = null;
@@ -34,6 +35,10 @@ const loadParentPackageJson = () : Promise<any> => {
 };
 
 export const typeLoader = (typeName, callback) => {
+  types = {
+    ...SERIALIZABLE_TYPES,
+    ...types
+  };
   if (types.hasOwnProperty(typeName)) {
     callback(null, types[typeName]);
   } else {

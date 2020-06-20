@@ -69,8 +69,15 @@ const hydrateEventStream = (events : EventStoreLib.Event[]) : Promise<EventStore
   return Promise.all((events || [])
     .map((event : EventStoreLib.Event) => {
       return new Promise<EventStoreLib.EventPayload>((resolve : Function, reject : (err : Error) => void) => {
-        if (!event.payload)
-          console.log(event, event.payload);
+        if (!event.payload && EntityEvent.IS_LIKE_EVENT(event)) {
+          const oldEvent: EntityEvent = <EntityEvent> <any> event;
+          event = {
+            name: oldEvent.name,
+            streamId: oldEvent.streamId,
+            aggregateId: oldEvent.streamId,
+            payload: oldEvent
+          }
+        }
         event.payload.streamId = event.streamId || event.aggregateId;
         if (esConfig.hasOwnProperty('type')) {
           // ensure types are restored after deserialization

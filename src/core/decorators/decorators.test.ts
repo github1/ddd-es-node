@@ -1,20 +1,14 @@
 import {
-  DecoratedEntityRepository,
-  DecoratedEventBus,
   onEvent,
   subscribe,
 } from './';
-import {Entity} from '../entity';
+import {Entity, EntityRepository} from '../entity';
 import {
   EntityEvent,
-  EventDispatcher
+  EventDispatcher,
+  MemoryEventStore
 } from '../event';
-import {LocalEventBus} from '../../runtime/local-event-bus';
-import {
-  clearMemoryEvents,
-  createMemoryEventDispatcher,
-  memoryEventStore
-} from '../../runtime/in-memory';
+import {EsContext} from '../..';
 
 class TestEntitySuperClass {
 
@@ -69,30 +63,26 @@ class ExtendsFromEntity extends Entity {
 }
 
 describe('decorators', () => {
-  let repo : DecoratedEntityRepository;
+  let repo : EntityRepository;
   let dispatcher : EventDispatcher;
+  let memoryEventStore : MemoryEventStore;
   let anEvent : EntityEvent = {
     uuid: '3dff623a-7373-11e8-adc0-fa7ae01bbebc',
     name: 'TestEvent',
     timestamp: 0,
-    typeNameMetaData: 'TestEvent',
+    typeNameMetaData: 'EntityEvent',
     streamId: '123'
   };
   beforeEach(() => {
-    dispatcher = createMemoryEventDispatcher(new DecoratedEventBus(new LocalEventBus(memoryEventStore)));
-    repo = new DecoratedEntityRepository(dispatcher, memoryEventStore);
+    memoryEventStore = new MemoryEventStore();
+    const esContext = new EsContext(memoryEventStore);
+    dispatcher = esContext.eventDispatcher;
+    repo = esContext.entityRepository;
     return dispatcher('123', anEvent);
   });
   afterEach(() => {
     TestEventSubscriber.reset();
-    clearMemoryEvents();
-  });
-  it('loads decorated types', async () => {
-    expect.assertions(3);
-    const entity = await repo.load(TestEntity, '123');
-    expect(entity.id).toBe('123');
-    expect(entity.lastEventReceivedFromSubclass).toBeDefined();
-    expect(entity.lastEventReceivedFromSuperclass).toBeDefined();
+    memoryEventStore.clearMemoryEvents();
   });
   it('loads decorated types with additional constructor args', async () => {
     expect.assertions(1);

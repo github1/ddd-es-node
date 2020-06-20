@@ -1,7 +1,7 @@
 import {
   resolveInstanceFromJson,
   createInstanceFromJson
-} from '../../src/runtime/type-deserializer';
+} from './type-deserializer';
 import {
   EntityEvent
 } from '../../src/index';

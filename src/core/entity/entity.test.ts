@@ -5,15 +5,15 @@ import {
 } from './index';
 import {
   EntityEvent,
-  EventDispatcher
+  EventDispatcher,
+  MemoryEventStore
 } from '../event';
 import {
-  clearMemoryEvents,
-  createMemoryEventDispatcher,
-  memoryEvents,
-  memoryEventStore
-} from '../../runtime/in-memory';
+  serializable
+} from '../decorators';
+import {EsContext} from '../..';
 
+@serializable
 class TestEvent extends EntityEvent {
 }
 
@@ -72,36 +72,39 @@ class TestEntitySubclass extends TestEntitySuperclass {
 describe('BaseEntityRepository', () => {
 
   describe('when loading an entity', () => {
+    let memoryEventsStore : MemoryEventStore;
     let repo : EntityRepository;
     let dispatcher : EventDispatcher;
     beforeEach(() => {
-      dispatcher = createMemoryEventDispatcher();
-      repo = new BaseEntityRepository(dispatcher, memoryEventStore);
+      memoryEventsStore = new MemoryEventStore();
+      const esContext = new EsContext(memoryEventsStore);
+      dispatcher = esContext.eventDispatcher;
+      repo = esContext.entityRepository
     });
     afterEach(() => {
-      clearMemoryEvents();
+      memoryEventsStore.clearMemoryEvents();
     });
     it('dispatches the event after an operation is executed', async () => {
       const entity = await repo.load(TestEntity, '123');
       entity.doSomething();
       await delay(20);
-      expect(memoryEvents.length).toBe(1);
-      expect(memoryEvents[0]).toBeInstanceOf(TestEvent);
+      expect(memoryEventsStore.memoryEvents.length).toBe(1);
+      expect(memoryEventsStore.memoryEvents[0]).toBeInstanceOf(TestEvent);
     });
     it('dispatches the an event returned from a entity function', async () => {
       const entity = await repo.load(TestEntity, '123');
       entity.doSomethingReturnsEvent();
       await delay(20);
-      expect(memoryEvents.length).toBe(1);
-      expect(memoryEvents[0]).toBeInstanceOf(TestEvent);
+      expect(memoryEventsStore.memoryEvents.length).toBe(1);
+      expect(memoryEventsStore.memoryEvents[0]).toBeInstanceOf(TestEvent);
     });
     it('dispatches the an array of events returned from a entity function', async () => {
       const entity = await repo.load(TestEntity, '123');
       entity.doSomethingReturnsEvents();
       await delay(20);
-      expect(memoryEvents.length).toBe(2);
-      expect(memoryEvents[0]).toBeInstanceOf(TestEvent);
-      expect(memoryEvents[1].typeNameMetaData).toBe('TestEvent');
+      expect(memoryEventsStore.memoryEvents.length).toBe(2);
+      expect(memoryEventsStore.memoryEvents[0]).toBeInstanceOf(TestEvent);
+      expect(memoryEventsStore.memoryEvents[1].typeNameMetaData).toBe('TestEvent');
     });
     describe('when an error is thrown', () => {
       it('receives errors from the constructor', async () => {

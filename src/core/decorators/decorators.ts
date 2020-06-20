@@ -28,7 +28,7 @@ interface OnEventMetadata {
   superclasses? : any[];
 }
 
-let decoratedEventBusInstance: EventBus;
+//let decoratedEventBusInstance: EventBus;
 const subscribers: Subscriber[] = [];
 
 export const subscribe = (options : EventBusSubscriptionOptions = {}) => {
@@ -43,11 +43,7 @@ export const subscribe = (options : EventBusSubscriptionOptions = {}) => {
         eventBus.subscribe(inst[propertyKey].bind(inst), options);
       }
     };
-    if (decoratedEventBusInstance) {
-      subscriber.subscribeTo(decoratedEventBusInstance);
-    } else {
-      subscribers.push(subscriber);
-    }
+    subscribers.push(subscriber);
   };
 };
 
@@ -71,6 +67,12 @@ export function onEvent(
     METADATA_ON_EVENT, metadata,
     index[target.constructor.name]
   );
+}
+
+export const SERIALIZABLE_TYPES: {[key:string]: Function} = {};
+
+export function serializable(constructor: Function) {
+  SERIALIZABLE_TYPES[constructor.name] = constructor;
 }
 
 export class WrapperEntity extends Entity {
@@ -118,7 +120,6 @@ export class DecoratedEntityRepository implements EntityRepository {
 
 export class DecoratedEventBus implements EventBus {
   constructor(private readonly eventBus : EventBus) {
-    decoratedEventBusInstance = this;
     for(const subscriber of subscribers) {
       subscriber.subscribeTo(this);
     }

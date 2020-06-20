@@ -6,6 +6,7 @@ export interface EntityEventUser {
 }
 
 export class EntityEvent {
+  public static EVENT_TYPES : {[key:string]: any} = {};
   public uuid : string;
   public streamId : string;
   public typeNameMetaData : string;
@@ -24,6 +25,7 @@ export class EntityEvent {
     this.typeNameMetaData = this.constructor.name;
     this.name = this.typeNameMetaData;
     this.timestamp = new Date().getTime();
+    EntityEvent.EVENT_TYPES[this.typeNameMetaData] = this.constructor;
   }
 }
 
