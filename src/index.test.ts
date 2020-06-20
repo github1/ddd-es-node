@@ -2,6 +2,7 @@ import {
   defaultEsContext,
   Dispatcher,
   EntityEvent,
+  User,
   onEvent
 } from './';
 
@@ -17,6 +18,7 @@ class EsEvent extends EntityEvent {
 class EsTestEntity {
   public dispatch : Dispatcher;
   public receivedEvents : EntityEvent[] = [];
+  public user : User;
 
   constructor(readonly id : string) {
   }
@@ -54,6 +56,7 @@ describe('es-main', () => {
       .withUser({id: 'foo'})
       .atTime(12312);
     const entity : EsTestEntity = await entityRepository.load(EsTestEntity, '323');
+    expect(entity.user.id).toBe('foo');
     entity.doSomething();
     expect(entity.lastEvent.user.id).toBe('foo');
     expect(entity.lastEvent.timestamp).toEqual(12312);

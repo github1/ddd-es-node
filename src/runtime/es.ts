@@ -2,17 +2,18 @@ import {
   DecoratedEntityRepository,
   DecoratedEventBus,
   EntityEvent,
-  EntityEventUser,
   EntityRepository,
+  EntityRepositoryWithModifiers,
   EventBus,
   EventDispatcher,
   eventDispatcherWithModifiers,
-  EventModifier,
-  EventModifiers,
   EventsByStream,
   EventStore,
   EventStoreSeeded,
-  EventStoreWriter
+  EventStoreWriter,
+  Modifier,
+  Modifiers,
+  User
 } from '../core';
 import {LocalEventBus} from './local-event-bus';
 import * as eventstore from 'eventstore';
@@ -70,7 +71,7 @@ const hydrateEventStream = (events : EventStoreLib.Event[]) : Promise<EventStore
     .map((event : EventStoreLib.Event) => {
       return new Promise<EventStoreLib.EventPayload>((resolve : Function, reject : (err : Error) => void) => {
         if (!event.payload && EntityEvent.IS_LIKE_EVENT(event)) {
-          const oldEvent: EntityEvent = <EntityEvent> <any> event;
+          const oldEvent : EntityEvent = <EntityEvent><any>event;
           event = {
             name: oldEvent.name,
             streamId: oldEvent.streamId,
@@ -112,24 +113,24 @@ export class EsContext implements EsContextClosed {
 
   constructor(public readonly eventStore : EventStore,
               private readonly eventStoreWriter? : EventStoreWriter,
-              private readonly modifiers : EventModifiers = {},
+              private readonly modifiers : Modifiers = {},
               seededEvents : EventsByStream = {}) {
     this.eventStore = Object.keys(seededEvents).length === 0 ? eventStore : new EventStoreSeeded(eventStore, seededEvents);
     this.eventStoreWriter = this.eventStoreWriter || <EventStoreWriter>(<any>this.eventStore);
     this.eventBus = new DecoratedEventBus(new LocalEventBus(this.eventStore));
     this.eventDispatcher = eventDispatcherWithModifiers(
       createEventDispatcher(this.eventStoreWriter, this.eventBus), this.modifiers);
-    this.entityRepository = new DecoratedEntityRepository(this.eventDispatcher, this.eventStore);
+    this.entityRepository = new EntityRepositoryWithModifiers(new DecoratedEntityRepository(this.eventDispatcher, this.eventStore), this.modifiers);
   }
 
-  public withModifier(id : string, modifier : EventModifier) : EsContext {
+  public withModifier(id : string, modifier : Modifier) : EsContext {
     return new EsContext(this.eventStore, this.eventStoreWriter, {
       ...(this.modifiers),
       [id]: modifier
     });
   }
 
-  public withUser(user : EntityEventUser) : EsContext {
+  public withUser(user : User) : EsContext {
     return this
       .withModifier('user', (event : EntityEvent) => event.user = user)
   }
@@ -232,11 +233,11 @@ class EventStoreLibEventStore implements EventStore, EventStoreWriter {
 
 function createEventDispatcher(eventStoreWriter : EventStoreWriter, eventBus : EventBus) : EventDispatcher {
   return async (streamId : string, ...events : EntityEvent[]) : Promise<void> => {
-    const written : EventStoreLib.Event[] = <any> (await eventStoreWriter.write(...events
+    const written : EventStoreLib.Event[] = <any>(await eventStoreWriter.write(...events
       .map((event : EntityEvent) => {
-      event.streamId = streamId;
-      return event;
-    })));
+        event.streamId = streamId;
+        return event;
+      })));
     const hydratedEvents = await hydrateEventStream(written);
     for (const hydratedEvent of hydratedEvents) {
       eventBus.emit(hydratedEvent);

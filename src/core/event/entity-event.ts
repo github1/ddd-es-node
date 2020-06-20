@@ -1,9 +1,5 @@
 import {v4} from 'uuid';
-
-export interface EntityEventUser {
-  id : string;
-  meta? : any;
-}
+import {User} from '../';
 
 export class EntityEvent {
   public static EVENT_TYPES : {[key:string]: any} = {};
@@ -12,7 +8,7 @@ export class EntityEvent {
   public typeNameMetaData : string;
   public name : string;
   public timestamp : number;
-  public user? : EntityEventUser;
+  public user? : User;
 
   public static IS_LIKE_EVENT(obj : any) {
     return obj && obj.hasOwnProperty('uuid')

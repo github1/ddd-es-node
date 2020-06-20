@@ -36,6 +36,11 @@ class TestEntity extends Entity {
     this.dispatch(new TestEvent());
   }
 
+  public async doSomethingAsync(ms: number) {
+    await delay(ms);
+    return new TestEvent();
+  }
+
   public doSomethingReturnsEvent() {
     return new TestEvent();
   }
@@ -87,24 +92,32 @@ describe('BaseEntityRepository', () => {
     it('dispatches the event after an operation is executed', async () => {
       const entity = await repo.load(TestEntity, '123');
       entity.doSomething();
-      await delay(20);
+      console.log(memoryEventsStore.memoryEvents);
+      await delay(100);
       expect(memoryEventsStore.memoryEvents.length).toBe(1);
       expect(memoryEventsStore.memoryEvents[0]).toBeInstanceOf(TestEvent);
     });
-    it('dispatches the an event returned from a entity function', async () => {
+    it('dispatches the event returned from a entity function', async () => {
       const entity = await repo.load(TestEntity, '123');
       entity.doSomethingReturnsEvent();
-      await delay(20);
+      await delay(10);
       expect(memoryEventsStore.memoryEvents.length).toBe(1);
       expect(memoryEventsStore.memoryEvents[0]).toBeInstanceOf(TestEvent);
     });
     it('dispatches the an array of events returned from a entity function', async () => {
       const entity = await repo.load(TestEntity, '123');
       entity.doSomethingReturnsEvents();
-      await delay(20);
+      await delay(10);
       expect(memoryEventsStore.memoryEvents.length).toBe(2);
       expect(memoryEventsStore.memoryEvents[0]).toBeInstanceOf(TestEvent);
       expect(memoryEventsStore.memoryEvents[1].typeNameMetaData).toBe('TestEvent');
+    });
+    it('dispatches the event returned from an async entity function', async () => {
+      const entity = await repo.load(TestEntity, '123');
+      await entity.doSomethingAsync(20);
+      await delay(1);
+      expect(memoryEventsStore.memoryEvents.length).toBe(1);
+      expect(memoryEventsStore.memoryEvents[0]).toBeInstanceOf(TestEvent);
     });
     describe('when an error is thrown', () => {
       it('receives errors from the constructor', async () => {

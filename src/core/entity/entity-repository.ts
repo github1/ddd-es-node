@@ -4,6 +4,7 @@ import {
   EventDispatcher,
   EventStore
 } from '../event';
+import {Modifiers} from '../';
 
 // tslint:disable
 export class ChainInterceptorPromise<T> extends Promise<T> {
@@ -34,6 +35,16 @@ export class ChainInterceptorPromise<T> extends Promise<T> {
 
 export interface EntityRepository {
   load<T>(construct : { new(...arg : any[]) : T }, id : string, ...additional : any[]) : Promise<T>;
+}
+
+function processResult(result: any, eventsToDispatch: EntityEvent[]) {
+  const asArray = result ? (Array.isArray(result) ? result : [result]) : [];
+  for (const item of asArray) {
+    if (item instanceof EntityEvent || EntityEvent.IS_LIKE_EVENT(item)) {
+      eventsToDispatch.push(item);
+    }
+  }
+  return result;
 }
 
 export const loadWithInstance = <T>(
@@ -69,13 +80,10 @@ export const loadWithInstance = <T>(
             if (!/^(dispatch|get.*)$/i.test(propKey) && typeof origMethod === 'function') {
               return function (...args: any[]) {
                 const result = origMethod.apply(this, args);
-                const asArray = result ? (Array.isArray(result) ? result : [result]) : [];
-                for (const item of asArray) {
-                  if (item instanceof EntityEvent || EntityEvent.IS_LIKE_EVENT(item)) {
-                    eventsToDispatch.push(item);
-                  }
+                if (result && typeof result.then === 'function') {
+                  return result.then((result: any) => processResult(result, eventsToDispatch));
                 }
-                return result;
+                return processResult(result, eventsToDispatch);
               };
             }
             return origMethod;
@@ -89,6 +97,21 @@ export const loadWithInstance = <T>(
   }), () => {
     chainComplete = true;
     if (eventsToDispatch.length === 0) {
+      let hasTimedOut = false;
+      const checkForEventsTimeout = setTimeout(() => {
+        hasTimedOut = true;
+      }, 5000);
+      const checkForEventsInterval = setInterval(async () => {
+        const flushTo : EntityEvent[] = [];
+        while (eventsToDispatch.length > 0) {
+          flushTo.push(eventsToDispatch.shift());
+        }
+        if (flushTo.length > 0 || hasTimedOut) {
+          clearTimeout(checkForEventsTimeout);
+          clearInterval(checkForEventsInterval);
+        }
+        await eventDispatcher(id, ...flushTo)
+      }, 1);
       return Promise.resolve();
     } else {
       const flushTo : EntityEvent[] = [];
@@ -112,6 +135,19 @@ export class BaseEntityRepository implements EntityRepository {
       <Entity>new construct(id, ...additional),
       this.eventDispatcher,
       this.eventStore);
+  }
+
+}
+
+export class EntityRepositoryWithModifiers implements EntityRepository {
+  constructor(private readonly entityRepository : EntityRepository, private readonly modifiers : Modifiers) {
+  }
+  public async load<T>(construct : { new(...arg : any[]) : T }, id : string, ...additional : any[]) : Promise<T> {
+    const inst : T = await this.entityRepository.load(construct, id, ...additional);
+    Object
+      .keys(this.modifiers)
+      .forEach((key: string) => this.modifiers[key](inst));
+    return inst;
   }
 
 }

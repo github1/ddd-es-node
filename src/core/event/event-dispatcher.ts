@@ -1,18 +1,11 @@
 import {EntityEvent} from './entity-event';
+import {Modifiers} from '../';
 
 export type EventDispatcher = (streamId : string, ...events : EntityEvent[]) => Promise<void>;
 
 export type Dispatcher = (event : EntityEvent) => void;
 
-export interface EventModifier {
-  (event : any) : any | undefined;
-}
-
-export interface EventModifiers {
- [key : string] : EventModifier
-}
-
-export function eventDispatcherWithModifiers(eventDispatcher : EventDispatcher, modifiers : EventModifiers) : EventDispatcher {
+export function eventDispatcherWithModifiers(eventDispatcher : EventDispatcher, modifiers : Modifiers) : EventDispatcher {
   if (!modifiers || Object.keys(modifiers).length === 0) {
     return eventDispatcher;
   }
