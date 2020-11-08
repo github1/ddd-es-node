@@ -68,7 +68,8 @@ es.init((err : Error) => {
 
 const hydrateEventStream = (events : EventStoreLib.Event[]) : Promise<EventStoreLib.EventPayload[]> => {
   return Promise.all((events || [])
-    .map((event : EventStoreLib.Event) => {
+    .map((inEvent : EventStoreLib.Event) => {
+      let event : EventStoreLib.Event = inEvent;
       return new Promise<EventStoreLib.EventPayload>((resolve : Function, reject : (err : Error) => void) => {
         if (!event.payload && EntityEvent.IS_LIKE_EVENT(event)) {
           const oldEvent : EntityEvent = <EntityEvent><any>event;
@@ -77,7 +78,7 @@ const hydrateEventStream = (events : EventStoreLib.Event[]) : Promise<EventStore
             streamId: oldEvent.streamId,
             aggregateId: oldEvent.streamId,
             payload: oldEvent
-          }
+          };
         }
         event.payload.streamId = event.streamId || event.aggregateId;
         if (esConfig.hasOwnProperty('type')) {
@@ -120,7 +121,8 @@ export class EsContext implements EsContextClosed {
     this.eventBus = new DecoratedEventBus(new LocalEventBus(this.eventStore));
     this.eventDispatcher = eventDispatcherWithModifiers(
       createEventDispatcher(this.eventStoreWriter, this.eventBus), this.modifiers);
-    this.entityRepository = new EntityRepositoryWithModifiers(new DecoratedEntityRepository(this.eventDispatcher, this.eventStore), this.modifiers);
+    this.entityRepository = new EntityRepositoryWithModifiers(
+      new DecoratedEntityRepository(this.eventDispatcher, this.eventStore), this.modifiers);
   }
 
   public withModifier(id : string, modifier : Modifier) : EsContext {
@@ -132,7 +134,7 @@ export class EsContext implements EsContextClosed {
 
   public withUser(user : User) : EsContext {
     return this
-      .withModifier('user', (event : EntityEvent) => event.user = user)
+      .withModifier('user', (event : EntityEvent) => event.user = user);
   }
 
   public atTime(timestamp : number) : EsContext {
@@ -156,7 +158,7 @@ class EventStoreLibEventStore implements EventStore, EventStoreWriter {
               reject(err);
             } else {
               this.doReplay(stream.events, handler)
-                .then(() => resolve())
+                .then(resolve)
                 .catch(reject);
             }
           });
@@ -177,7 +179,7 @@ class EventStoreLibEventStore implements EventStore, EventStoreWriter {
               reject(err);
             } else {
               this.doReplay(events, handler)
-                .then(() => resolve())
+                .then(resolve)
                 .catch(reject);
             }
           });
@@ -185,16 +187,6 @@ class EventStoreLibEventStore implements EventStore, EventStoreWriter {
       })
       .then(() => {
         // void
-      });
-  }
-
-  private doReplay(events : EventStoreLib.Event[], handler : (event : EntityEvent, isReplaying? : boolean) => void) : Promise<void> {
-    return hydrateEventStream(events)
-      .then((results : EventStoreLib.EventPayload[]) => {
-        for (let i = 0, il = results.length; i < il; i++) {
-          const entityEvent : EntityEvent = <EntityEvent>results[i];
-          handler(entityEvent, true);
-        }
       });
   }
 
@@ -227,6 +219,16 @@ class EventStoreLibEventStore implements EventStore, EventStoreWriter {
       }))
       .then((events : EntityEvent[][]) => {
         return [].concat(...events);
+      });
+  }
+
+  private doReplay(events : EventStoreLib.Event[], handler : (event : EntityEvent, isReplaying? : boolean) => void) : Promise<void> {
+    return hydrateEventStream(events)
+      .then((results : EventStoreLib.EventPayload[]) => {
+        for (const result of results) {
+          const entityEvent : EntityEvent = <EntityEvent>result;
+          handler(entityEvent, true);
+        }
       });
   }
 }

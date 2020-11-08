@@ -10,12 +10,6 @@ export class EntityEvent {
   public timestamp : number;
   public user? : User;
 
-  public static IS_LIKE_EVENT(obj : any) {
-    return obj && obj.hasOwnProperty('uuid')
-      && obj.hasOwnProperty('typeNameMetaData')
-      && obj.hasOwnProperty('name');
-  }
-
   constructor() {
     this.uuid = v4();
     this.typeNameMetaData = this.constructor.name;
@@ -23,8 +17,14 @@ export class EntityEvent {
     this.timestamp = new Date().getTime();
     EntityEvent.EVENT_TYPES[this.typeNameMetaData] = this.constructor;
   }
+
+  public static IS_LIKE_EVENT(obj : any) {
+    return obj && obj.hasOwnProperty('uuid')
+      && obj.hasOwnProperty('typeNameMetaData')
+      && obj.hasOwnProperty('name');
+  }
 }
 
 export interface EventsByStream {
-  [streamId:string]: EntityEvent[]
+  [streamId:string]: EntityEvent[];
 }

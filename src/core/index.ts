@@ -7,10 +7,8 @@ export interface User {
   meta? : any;
 }
 
-export interface Modifier {
-  (event : any) : any | undefined;
-}
+export type Modifier = (event : any) => any | undefined;
 
 export interface Modifiers {
-  [key : string] : Modifier
+  [key : string] : Modifier;
 }

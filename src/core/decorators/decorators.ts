@@ -71,8 +71,8 @@ export function onEvent(
 
 export const SERIALIZABLE_TYPES: {[key:string]: Function} = {};
 
-export function serializable(constructor: Function) {
-  SERIALIZABLE_TYPES[constructor.name] = constructor;
+export function serializable(typeConstructor: Function) {
+  SERIALIZABLE_TYPES[typeConstructor.name] = typeConstructor;
 }
 
 export class WrapperEntity extends Entity {
