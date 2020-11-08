@@ -49,5 +49,10 @@
     "prefer-type-cast": false,
     "import-name": false,
     "no-unsafe-any": false
+  },
+  "linterOptions": {
+    "exclude": [
+      "**/*.test.*"
+    ]
   }
 }
