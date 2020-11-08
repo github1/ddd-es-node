@@ -7,6 +7,7 @@ import {
 } from '../../src/index';
 
 export class ComplexEvent extends EntityEvent {
+  public complexType: any;
   constructor(complexType) {
     super();
     this.complexType = complexType;
@@ -14,9 +15,15 @@ export class ComplexEvent extends EntityEvent {
 }
 
 export class ComplexType {
-  constructor(value) {
+  public typeNameMetaData: string;
+  public value: any;
+  public a: any;
+  public b: any;
+  constructor(value, a?, b?) {
     this.typeNameMetaData = this.constructor.name;
     this.value = value;
+    this.a = a;
+    this.b = b;
   }
 }
 

@@ -1,5 +1,4 @@
 import {
-  BaseEntityRepository,
   Entity,
   EntityRepository
 } from './index';
