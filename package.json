@@ -1,6 +1,6 @@
 {
   "name": "ddd-es-node",
-  "version": "0.4.0",
+  "version": "0.4.5",
   "description": "DDD and Event Sourcing primitives for nodejs",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -37,7 +37,7 @@
     "tslint": "6.1.3",
     "tslint-microsoft-contrib": "6.0.0",
     "tsutils": "3.17.1",
-    "typescript": "3.9.7"
+    "typescript": "4.3.5"
   },
   "license": "MIT",
   "publishConfig": {
