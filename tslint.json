@@ -27,6 +27,7 @@
     "whitespace": false,
     "one-line": false,
     "newline-before-return": false,
+    "newline-per-chained-call": false,
     "no-require-imports": false,
     "no-console": false,
     "mocha-no-side-effect-code": false,
@@ -39,6 +40,7 @@
     "no-floating-promises": false,
     "no-backbone-get-set-outside-model": false,
     "no-parameter-properties": false,
+    "trailing-comma": false,
     "typedef": [
       true,
       "parameter",
