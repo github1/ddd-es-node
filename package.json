@@ -20,7 +20,7 @@
     "prepublishOnly": "npm run clean && npm run build && ./prepare.sh"
   },
   "dependencies": {
-    "eventstore": "1.12.3",
+    "eventstore": "1.15.5",
     "reflect-metadata": "0.1.13",
     "uuid": "8.3.0",
     "walk": "2.3.9"
