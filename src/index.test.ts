@@ -20,6 +20,7 @@ class EsTestEntity {
     this.dispatch(new EsEvent('didSomething'));
   }
 
+  // @ts-ignore
   @onEvent
   public handle(event: EntityEvent) {
     this.receivedEvents.push(event);
@@ -148,4 +149,4 @@ describe('es-main', () => {
 });
 
 const delay = (ms: number) =>
-  new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
+  new Promise<void>((resolve) => setTimeout(resolve, ms));

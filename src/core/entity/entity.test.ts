@@ -1,26 +1,17 @@
-import {
-  Entity,
-  EntityRepository
-} from './index';
-import {
-  EntityEvent,
-  EventDispatcher,
-  MemoryEventStore
-} from '../event';
-import {
-  serializable
-} from '../decorators';
-import {EsContext} from '../..';
+import { Entity, EntityRepository } from './index';
+import { EntityEvent, EventDispatcher, MemoryEventStore } from '../event';
+import { serializable } from '../decorators';
+import { EsContext } from '../..';
 
+// @ts-ignore
 @serializable
-class TestEvent extends EntityEvent {
-}
+class TestEvent extends EntityEvent {}
 
 class TestEntity extends Entity {
-  public lastEventReceived : EntityEvent;
+  public lastEventReceived: EntityEvent;
 
-  constructor(id : string, public anotherArg : string) {
-    super(id, (self : TestEntity, event : EntityEvent) => {
+  constructor(id: string, public anotherArg: string) {
+    super(id, (self: TestEntity, event: EntityEvent) => {
       self.lastEventReceived = event;
       if (self.id === 'errorInEventHandler') {
         throw new Error(self.id);
@@ -45,45 +36,51 @@ class TestEntity extends Entity {
   }
 
   public doSomethingReturnsEvents() {
-    return [new TestEvent(), {
-      uuid: '12345eventLike',
-      typeNameMetaData: 'TestEvent',
-      name: 'TestEvent'
-    }];
+    return [
+      new TestEvent(),
+      {
+        uuid: '12345eventLike',
+        typeNameMetaData: 'TestEvent',
+        name: 'TestEvent',
+      },
+    ];
   }
 }
 
 class TestEntitySuperclass extends Entity {
-  public lastEventReceivedFromSuperclass : EntityEvent;
+  public lastEventReceivedFromSuperclass: EntityEvent;
 
-  constructor(id : string, eventHandler) {
-    super(id, (self : TestEntitySuperclass, event : EntityEvent) => {
-      self.lastEventReceivedFromSuperclass = event;
-    }, eventHandler);
+  constructor(id: string, eventHandler) {
+    super(
+      id,
+      (self: TestEntitySuperclass, event: EntityEvent) => {
+        self.lastEventReceivedFromSuperclass = event;
+      },
+      eventHandler
+    );
   }
 }
 
 class TestEntitySubclass extends TestEntitySuperclass {
-  public lastEventReceivedFromSubclass : EntityEvent;
+  public lastEventReceivedFromSubclass: EntityEvent;
 
-  constructor(id : string) {
-    super(id, (self : TestEntitySubclass, event : EntityEvent) => {
+  constructor(id: string) {
+    super(id, (self: TestEntitySubclass, event: EntityEvent) => {
       self.lastEventReceivedFromSubclass = event;
     });
   }
 }
 
 describe('BaseEntityRepository', () => {
-
   describe('when loading an entity', () => {
-    let memoryEventsStore : MemoryEventStore;
-    let repo : EntityRepository;
-    let dispatcher : EventDispatcher;
+    let memoryEventsStore: MemoryEventStore;
+    let repo: EntityRepository;
+    let dispatcher: EventDispatcher;
     beforeEach(() => {
       memoryEventsStore = new MemoryEventStore();
       const esContext = new EsContext(memoryEventsStore);
       dispatcher = esContext.eventDispatcher;
-      repo = esContext.entityRepository
+      repo = esContext.entityRepository;
     });
     afterEach(() => {
       memoryEventsStore.clearMemoryEvents();
@@ -109,7 +106,9 @@ describe('BaseEntityRepository', () => {
       await delay(10);
       expect(memoryEventsStore.memoryEvents.length).toBe(2);
       expect(memoryEventsStore.memoryEvents[0]).toBeInstanceOf(TestEvent);
-      expect(memoryEventsStore.memoryEvents[1].typeNameMetaData).toBe('TestEvent');
+      expect(memoryEventsStore.memoryEvents[1].typeNameMetaData).toBe(
+        'TestEvent'
+      );
     });
     it('dispatches the event returned from an async entity function', async () => {
       const entity = await repo.load(TestEntity, '123');
@@ -149,23 +148,28 @@ describe('BaseEntityRepository', () => {
           name: 'TestEvent',
           timestamp: 0,
           typeNameMetaData: 'TestEvent',
-          streamId: '123'
+          streamId: '123',
         });
       });
       it('applies the events to the entity', async () => {
         const entity = await repo.load(TestEntity, '123');
-        expect(entity.lastEventReceived.uuid).toBe('3dff623a-7373-11e8-adc0-fa7ae01bbebc');
+        expect(entity.lastEventReceived.uuid).toBe(
+          '3dff623a-7373-11e8-adc0-fa7ae01bbebc'
+        );
       });
       describe('when the entity is a subclass', () => {
         it('applies the events the parent handler and child handler', async () => {
           const entity = await repo.load(TestEntitySubclass, '123');
-          expect(entity.lastEventReceivedFromSuperclass.uuid).toBe('3dff623a-7373-11e8-adc0-fa7ae01bbebc');
-          expect(entity.lastEventReceivedFromSubclass.uuid).toBe('3dff623a-7373-11e8-adc0-fa7ae01bbebc');
+          expect(entity.lastEventReceivedFromSuperclass.uuid).toBe(
+            '3dff623a-7373-11e8-adc0-fa7ae01bbebc'
+          );
+          expect(entity.lastEventReceivedFromSubclass.uuid).toBe(
+            '3dff623a-7373-11e8-adc0-fa7ae01bbebc'
+          );
         });
       });
     });
   });
-
 });
 
-const delay = ms => new Promise(resolve => setTimeout(() => resolve(), ms));
+const delay = (ms) => new Promise<void>((resolve) => setTimeout(resolve, ms));
